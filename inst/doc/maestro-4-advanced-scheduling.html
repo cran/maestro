@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Advanced Scheduling</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Advanced Scheduling</h1>
+
+
+
+<p>This vignette covers more advanced concepts and examples related to
+scheduling. At it’s core, maestro adheres to two keys principles:</p>
+<ol style="list-style-type: decimal">
+<li>Stateless: It does not need to be continuously running - it can be
+run in a serverless architecture</li>
+<li>Use of <em>rounded scheduling</em>: The timeliness of pipeline
+executions depends on how often you run your orchestrator</li>
+</ol>
+<p>Here, we’ll explain these concepts more deeply in the context of
+maestro and give some concrete examples.</p>
+<div id="stateless-execution" class="section level2">
+<h2>Stateless Execution</h2>
+<p>Maestro takes a unique approach to scheduling compared to other
+orchestration tools. Whereas most schedulers involve a continuously
+running program to monitor the time and execute jobs when the current
+time is right, maestro is designed to run intermittently. It also
+doesn’t need to save or cache data between executions - in other words,
+it’s <em>stateless</em>.</p>
+<p>This design has several benefits; namely, you can run it in a
+serverless way which saves on compute resources. However, to achieve
+this it takes some shortcuts which may mean that precise timeliness is
+lost. This will become clearer in our examples.</p>
+</div>
+<div id="rounded-scheduling" class="section level2">
+<h2>Rounded Scheduling</h2>
+<p>The timeliness of a pipeline is measured in how close the scheduled
+execution time is to the actual execution time. <strong>Maestro is only
+as timely as it needs to be relative to the unit of time you are
+interested in</strong>. This is the concept of <em>rounded
+scheduling</em>. If you run your orchestrator once daily, then the
+timeliness of the pipelines will be within the nearest day - it doesn’t
+care that you specified a pipeline to run at exactly 09:21:20 each day.
+If you run it every 10 minutes, then the timeliness of the pipelines
+will be within the nearest 10 minute interval.</p>
+<p>Let’s look at some examples:</p>
+<p>First, we’ll consider one pipeline that is scheduled to run daily at
+09:20:00 and we’ll configure the orchestrator to run daily.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># ./pipelines/daily_example.R</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co">#&#39; daily_example maestro pipeline</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co">#&#39;</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency 1 day</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&#39; @maestroStartTime 2024-06-20 09:20:00</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>daily_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>}</span></code></pre></div>
+<p>For demonstration purposes, I’ll manually set the check time to be
+08:00:00 UTC (this is the time maestro will use to compare against the
+scheduled time). In practice, you almost always want this to be the
+system time using either <code>Sys.time()</code> or
+<code>lubridate::now()</code>.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># ./orchestrator.R</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">library</span>(maestro)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">build_schedule</span>()</span></code></pre></div>
+<pre><code>## ℹ 1 script successfully parsed</code></pre>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>status <span class="ot">&lt;-</span> <span class="fu">run_schedule</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  schedule,</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="at">orch_frequency =</span> <span class="st">&quot;1 day&quot;</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="at">check_datetime =</span> <span class="fu">as.POSIXct</span>(<span class="st">&quot;2024-06-20 08:00:00&quot;</span>, <span class="at">tz =</span> <span class="st">&quot;UTC&quot;</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>)</span></code></pre></div>
+<pre><code>## 
+## ── Running pipelines ▶ 
+## ℹ ./pipelines/daily_example.R daily_example
+## ✔ ./pipelines/daily_example.R daily_example [23ms]
+## 
+## 
+## ── Pipeline execution completed ■ | 0.031 sec elapsed 
+## ✔ 1 success | → 0 skipped | ! 0 warnings | ✖ 0 errors | ◼ 1 total
+## ────────────────────────────────────────────────────────────────────────────────
+## 
+## ── Next scheduled pipelines ❯ 
+## Pipe name | Next scheduled run
+## • daily_example | 2024-06-20</code></pre>
+<p>We can see that the pipeline executed even though the current time
+was not 09:20:00. This is because we set the orchestrator to run daily
+and so it considers it close enough to within a day.</p>
+<p>Let’s see what happens if we up the frequency of the
+orchestrator:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># ./orchestrator.R</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>status <span class="ot">&lt;-</span> <span class="fu">run_schedule</span>(</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  schedule,</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="at">orch_frequency =</span> <span class="st">&quot;15 minutes&quot;</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="at">check_datetime =</span> <span class="fu">as.POSIXct</span>(<span class="st">&quot;2024-06-20 08:00:00&quot;</span>, <span class="at">tz =</span> <span class="st">&quot;UTC&quot;</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>)</span></code></pre></div>
+<pre><code>## </code></pre>
+<pre><code>## ── Running pipelines ▶</code></pre>
+<pre><code>## → ./pipelines/daily_example.R daily_example</code></pre>
+<pre><code>## </code></pre>
+<pre><code>## ── Pipeline execution completed ■ | 0.002 sec elapsed</code></pre>
+<pre><code>## ✔ 0 successes | → 1 skipped | ! 0 warnings | ✖ 0 errors | ◼ 1 total</code></pre>
+<pre><code>## ────────────────────────────────────────────────────────────────────────────────</code></pre>
+<pre><code>## </code></pre>
+<pre><code>## ── Next scheduled pipelines ❯</code></pre>
+<pre><code>## Pipe name | Next scheduled run</code></pre>
+<pre><code>## • daily_example | 2024-06-20 09:15:00</code></pre>
+<p>It was skipped because it wasn’t within a 15 minute degree of
+difference but the output tells us that will next run at
+<code>2024-06-20 09:15:00</code>.<br />
+<br />
+The takeaway message is that the timeliness of the pipeline depends on
+how frequently the orchestrator runs. Remember that when you declare the
+<code>orch_frequency = &quot;15 minutes&quot;</code> that is essentially a
+contract stating that you <em>will</em> run it every 15 minutes -
+maestro does not do this for you. If you run the orchestrator more or
+less frequently than you said you would unexpected things will happen.
+Specifically, if you run it more frequently than stated, your pipelines
+will run more often than expected, likewise less frequently than stated
+means that pipelines won’t run as often.</p>
+</div>
+<div id="how-often-should-i-schedule-my-orchestrator" class="section level2">
+<h2><em>How often should I schedule my orchestrator?</em></h2>
+<p>If you have a single pipeline or even multiple pipelines that all run
+at the same time this is an easy question to answer. In practice (and in
+our experience using maestro in production) you have multiple pipelines
+that run at different intervals and different times. Maybe some run
+hourly, some run daily, and others run monthly.</p>
+<div id="example-1" class="section level3">
+<h3>Example 1</h3>
+<p>Let’s say we have three pipelines with the following frequencies and
+start times:</p>
+<pre><code>##    name frequency          start_time
+## 1 pipe1    1 hour 2024-06-18 12:30:00
+## 2 pipe2    2 days 2024-06-18 06:00:00
+## 3 pipe3  4 months 2024-06-20 00:00:00</code></pre>
+<p>A good starting point is to schedule it as often as the highest
+frequency pipeline in the project - so <code>1 hour</code> in the above
+example. If you run it on *:30:00 minute each day, pipe1 will execute
+nearly exactly at the scheduled time and the other pipelines will be
+executed 30 minutes early. If you’re comfortable with this margin of
+error then it’s no big deal, but if not then an orchestrator frequency
+of <code>30 minutes</code> will ensure all pipelines run as scheduled
+exactly.</p>
+<p>Let’s see another example:</p>
+</div>
+<div id="example-2" class="section level3">
+<h3>Example 2</h3>
+<pre><code>##    name frequency          start_time
+## 1 pipe4    1 hour 2024-06-18 00:00:00
+## 2 pipe5    1 hour 2024-06-18 00:10:00
+## 3 pipe6    1 hour 2024-06-18 00:20:00</code></pre>
+<p>All three pipelines are hourly but they start on different 10-minute
+intervals. If we run the orchestrator at <code>1 hour</code> they’ll all
+execute at the same time. If it is important that the execute at
+different times, we should set it to <code>10 minutes</code>.</p>
+<p>So a good heuristic is to run it as often as the smallest interval of
+time difference between any pipeline. This is pretty good so long as we
+don’t run it so often that the pipelines can’t complete before the next
+execution time. We don’t recommend running the orchestrator more
+frequently than every 5 minutes unless you’re confident that your
+pipelines are fast to execute.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
+<p>Maestro has a function for providing a reasonable estimate for the
+ideal orchestrator frequency called
+<code>suggest_orch_frequency()</code>. It uses the heuristic of the most
+frequent interval halved (e.g., if your highest frequency pipeline is 1
+hour, it suggests 30 minutes) to a minimum 15 minutes or your most
+frequent interval if it’s less. This is a bit more conservative but
+protects against running things too often. If timeliness and high
+frequency are really important to you, maestro might not be your best
+choice.</p>
+</div>
+</div>
+<div id="final-remarks" class="section level2">
+<h2>Final Remarks</h2>
+<p>When it comes time to deploy your project make sure that whatever you
+use to actually run your project (e.g., cron, TaskScheduler, Google
+Cloud Scheduler, etc.) is indeed running it at the same frequency as you
+have in the orchestrator. It’s best to stick to using whole units of
+time rather than fractional units - if my orchestrator runs every 15
+minutes I like to have it run on the 00:00, 15:00, 30:00, and 45:00
+minutes. It makes reasoning about the scheduling simpler.</p>
+</div>
+<div class="footnotes footnotes-end-of-document">
+<hr />
+<ol>
+<li id="fn1"><p>Make sure you consider the amount of time it takes to
+execute <code>build_schedule()</code> and that you account for the
+additional work done in <code>run_schedule()</code> not related to your
+actual pipeline logic.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

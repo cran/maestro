@@ -1,0 +1,8 @@
+Binding: create_maestro
+Title: Maestro Project
+Icon: maestro.png
+
+Parameter: type
+Widget: SelectInput
+Label: Orchestrator Type
+Fields: R, Quarto, RMarkdown
