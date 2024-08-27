@@ -21,9 +21,9 @@ run_schedule(
 \arguments{
 \item{schedule}{a table of scheduled pipelines generated from \code{build_schedule()}}
 
-\item{orch_frequency}{of the orchestrator, a single string formatted like "1 day" or "2 weeks"}
+\item{orch_frequency}{of the orchestrator, a single string formatted like "1 day", "2 weeks", "hourly", etc.}
 
-\item{check_datetime}{datetime to be used to check if the pipeline should run}
+\item{check_datetime}{datetime against which to check the running of pipelines (default is current system time in UTC)}
 
 \item{resources}{named list of shared resources made available to pipelines as needed}
 
@@ -82,19 +82,17 @@ console output appears different in multicore mode.
 }
 }
 \examples{
-pipeline_dir <- tempdir()
-create_pipeline("my_new_pipeline", pipeline_dir, open = FALSE, overwrite = TRUE)
-schedule <- build_schedule(pipeline_dir = pipeline_dir)
+
 # Runs the schedule every 1 day
 run_schedule(
-  schedule,
+  example_schedule,
   orch_frequency = "1 day",
   quiet = TRUE
 )
 
 # Runs the schedule every 15 minutes
 run_schedule(
-  schedule,
+  example_schedule,
   orch_frequency = "15 minutes",
   quiet = TRUE
 )

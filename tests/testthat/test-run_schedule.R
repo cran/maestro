@@ -69,7 +69,7 @@ test_that("run_schedule works on different kinds of frequencies", {
 
   test_freqs <- c("14 days", "10 minutes", "25 mins", "1 week",
                   "1 quarter", "12 months", "4 years", "24 hours",
-                  "31 days", "1 secs", "50 seconds")
+                  "31 days", "1 secs", "50 seconds", "daily", "hourly", "weekly")
 
   purrr::walk(test_freqs, ~{
     expect_no_error({
@@ -82,6 +82,28 @@ test_that("run_schedule works on different kinds of frequencies", {
 }) |>
   suppressMessages()
 
+test_that("run_schedule errors if check_datetime is not a timestamp", {
+
+  schedule <- build_schedule(test_path("test_pipelines_run_all_good")) |>
+    suppressMessages()
+
+  expect_error(
+    run_schedule(
+      schedule,
+      check_datetime = "a"
+    )
+  )
+
+  # But Dates work
+  expect_no_error(
+    run_schedule(
+      schedule,
+      check_datetime = as.Date("2024-01-01")
+    )
+  )
+}) |>
+  suppressMessages()
+
 test_that("run_schedule with quiet=TRUE prints no messages", {
   schedule <- build_schedule(test_path("test_pipelines_run_all_good")) |>
     suppressMessages()
@@ -89,6 +111,9 @@ test_that("run_schedule with quiet=TRUE prints no messages", {
   expect_no_message({
     run_schedule(schedule, run_all = TRUE, quiet = TRUE)
   })
+
+  expect_type(last_run_messages(), "list")
+  expect_gt(length(last_run_messages()), 0)
 })
 
 test_that("run_schedule fails on a pipeline that doesn't exist", {
@@ -161,6 +186,45 @@ test_that("run_schedule timeliness checks - pipelines run when they're supposed 
   )
 })
 
+test_that("run_schedule timeliness checks - specifiers (e.g., hours, days, months)", {
+
+  schedule <- build_schedule(test_path("test_pipelines_run_specifiers"), quiet = TRUE)
+
+  expect_snapshot(schedule)
+
+  output <- run_schedule(
+    schedule,
+    orch_frequency = "hourly",
+    check_datetime = as.POSIXct("2024-04-01 00:00:00", tz = "UTC"), # This is a Monday
+    quiet = TRUE
+  )
+
+  status <- output$status
+
+  expect_snapshot(
+    status$invoked
+  )
+  expect_snapshot(
+    status$next_run
+  )
+
+  output <- run_schedule(
+    schedule,
+    orch_frequency = "hourly",
+    check_datetime = as.POSIXct("2024-05-01 00:00:00", tz = "UTC"), # This is a Monday
+    quiet = TRUE
+  )
+
+  status <- output$status
+
+  expect_snapshot(
+    status$invoked
+  )
+  expect_snapshot(
+    status$next_run
+  )
+})
+
 test_that("run_schedule propagates warnings", {
 
   schedule <- build_schedule(test_path("test_pipelines_run_two_warnings"))
@@ -176,20 +240,19 @@ test_that("run_schedule handles errors in a pipeline", {
 
   schedule <- build_schedule(test_path("test_pipelines_run_some_errors"))
 
-  temp <- tempfile()
+  withr::with_tempfile("log", {
+    expect_message({
+      output <- run_schedule(schedule, run_all = TRUE, logging = TRUE, log_file = log)
+    })
+    status <- output$status
 
-  expect_message({
-    output <- run_schedule(schedule, run_all = TRUE, logging = TRUE, log_file = temp)
+    expect_gt(length(readLines(log)), 0)
+
+    errors <- last_run_errors()
+    expect_type(errors, "list")
+    expect_length(errors, 1)
+    expect_true(all(!is.na(status$pipeline_started)))
   })
-  status <- output$status
-
-  expect_gt(length(readLines(temp)), 0)
-  file.remove(temp)
-
-  errors <- last_run_errors()
-  expect_type(errors, "list")
-  expect_length(errors, 1)
-  expect_true(all(!is.na(status$pipeline_started)))
 }) |>
   suppressMessages()
 
@@ -254,19 +317,38 @@ test_that("run_schedule correctly thresholds logging at warn", {
 
   schedule <- build_schedule(test_path("test_pipelines_run_logs_warn"))
 
-  temp <- tempfile()
+  withr::with_tempfile("log", {
 
-  run_schedule(
+    run_schedule(
+      schedule,
+      run_all = TRUE,
+      logging = TRUE,
+      log_file = log
+    )
+
+    logs <- readLines(log)
+    expect_true(!all(grepl("INFO", logs)))
+    expect_true(any(grepl("WARN", logs)))
+  })
+}) |>
+  suppressMessages()
+
+test_that("run_schedule correctly skips pipelines as indicated", {
+
+  schedule <- build_schedule(test_path("test_pipelines_run_skip"))
+
+  res <- run_schedule(
     schedule,
-    run_all = TRUE,
-    logging = TRUE,
-    log_file = temp
+    quiet = TRUE,
+    orch_frequency = "1 month",
+    check_datetime = as.POSIXct("1970-01-01", "UTC") + months(3) # skipped pipeline scheduled to run here
   )
 
-  logs <- readLines(temp)
-  file.remove(temp)
-  expect_true(!all(grepl("INFO", logs)))
-  expect_true(any(grepl("WARN", logs)))
+  status <- res$status
+
+  expect_true(
+    !status$invoked[status$pipe_name == "wait"]
+  )
 }) |>
   suppressMessages()
 
@@ -274,19 +356,18 @@ test_that("run_schedule correctly trims log file", {
 
   schedule <- build_schedule(test_path("test_pipelines_run_all_good"))
 
-  temp <- tempfile()
+  withr::with_tempfile("log", {
+    run_schedule(
+      schedule,
+      run_all = TRUE,
+      logging = TRUE,
+      log_file = log,
+      log_file_max_bytes = 1000,
+      quiet = TRUE
+    )
 
-  run_schedule(
-    schedule,
-    run_all = TRUE,
-    logging = TRUE,
-    log_file = temp,
-    log_file_max_bytes = 1000,
-    quiet = TRUE
-  )
-
-  expect_lte(file.size(temp), 1000 + 100) # margin of error
-  file.remove(temp)
+    expect_lte(file.size(log), 1000 + 100) # margin of error
+  })
 }) |>
   suppressMessages()
 
@@ -294,26 +375,25 @@ test_that("run_schedule works with multiple cores", {
 
   future::plan(future::multisession(workers = 2))
 
-  schedule <- build_schedule(test_path("test_pipelines_run_all_good"))
+  withr::with_tempfile("log", {
+    schedule <- build_schedule(test_path("test_pipelines_run_all_good"))
 
-  temp <- tempfile()
+    expect_no_error({
+      output <- run_schedule(
+        schedule,
+        cores = 2,
+        run_all = TRUE,
+        logging = TRUE,
+        log_file = log
+      )
+    })
 
-  expect_no_error({
-    output <- run_schedule(
-      schedule,
-      cores = 2,
-      run_all = TRUE,
-      logging = TRUE,
-      log_file = temp
-    )
+    status <- output$status
+
+    expect_true(all(status$success))
+
+    expect_gt(length(readLines(log)), 0)
+    expect_length(last_run_errors(), 0)
   })
-
-  status <- output$status
-
-  expect_true(all(status$success))
-
-  expect_gt(length(readLines(temp)), 0)
-  file.remove(temp)
-  expect_length(last_run_errors(), 0)
 }) |>
   suppressMessages()

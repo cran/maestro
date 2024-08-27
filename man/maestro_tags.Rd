@@ -11,11 +11,14 @@ of pipelines.
 maestro tags follow the format \verb{#' @maestroTagName}
 \subsection{Tag List}{\tabular{lllll}{
    tagName \tab description \tab value \tab examples (comma sep.) \tab default \cr
-   maestroFrequency \tab Time unit for scheduling \tab string \tab 1 hour, 3 days, 5 weeks \tab 1 day \cr
+   maestroFrequency \tab Time unit for scheduling \tab string \tab 1 hour, daily, 3 days, 5 weeks \tab 1 day \cr
    maestroLogLevel \tab Threshold for logging when logging is requested \tab string \tab INFO, WARN, ERROR \tab INFO \cr
    maestroSkip \tab Skips the pipeline when running (presence of tag indicates to skip) \tab n/a \tab  \tab  \cr
    maestroStartTime \tab Start time of the pipeline; sets the point in time for recurrence \tab date or timestamp \tab 1970-01-01 00:00:00, 2024-03-28 \tab 1970-01-01 00:00:00 \cr
    maestroTz \tab Timezone of the start time \tab string \tab UTC, America/Halifax \tab UTC \cr
+   maestroHours \tab Hours of day to run pipeline \tab ints \tab 0 12 23 \tab  \cr
+   maestroDays \tab Days of week or days of month to run pipeline \tab ints or strings \tab 1 14 30, Mon Wed Sat \tab  \cr
+   maestroMonths \tab Months of year to run pipeline \tab ints \tab 1 3 9 12 \tab  \cr
 }
 
 }

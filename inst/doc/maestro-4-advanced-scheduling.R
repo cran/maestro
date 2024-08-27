@@ -61,6 +61,56 @@ data.frame(
   start_time = as.POSIXct(c("2024-06-18 00:00:00", "2024-06-18 00:10:00", "2024-06-18 00:20:00"))
 )
 
+## ----eval=FALSE---------------------------------------------------------------
+#  #' specific_hours maestro pipeline
+#  #'
+#  #' @maestroFrequency hourly
+#  #' @maestroHours 6 9 12 15 18
+#  some_hours_example <- function() {
+#  
+#    # Pipeline code
+#  }
+
+## ----eval=FALSE---------------------------------------------------------------
+#  #' specific_days_of_week maestro pipeline
+#  #'
+#  #' @maestroFrequency daily
+#  #' @maestroDays Mon Tue Wed Thu Fri
+#  some_dow_example <- function() {
+#  
+#    # Pipeline code
+#  }
+#  
+#  #' specific_days_of_week maestro pipeline
+#  #'
+#  #' @maestroFrequency daily
+#  #' @maestroDays 1 14 28
+#  some_dom_example <- function() {
+#  
+#    # Pipeline code
+#  }
+
+## ----eval=FALSE---------------------------------------------------------------
+#  #' specific_months maestro pipeline
+#  #'
+#  #' @maestroFrequency months
+#  #' @maestroMonths 1 7 10
+#  some_months <- function() {
+#  
+#    # Pipeline code
+#  }
+
+## ----eval=FALSE---------------------------------------------------------------
+#  #' business_hours maestro pipeline
+#  #'
+#  #' @maestroFrequency hourly
+#  #' @maestroHours 9 10 11 12 13 14 15 16 17
+#  #' @maestroDays Mon Tue Wed Thu Fri
+#  during_work_hours_example <- function() {
+#  
+#    # Pipeline code
+#  }
+
 ## ----cleanup, echo=FALSE, message=FALSE, warning=FALSE------------------------
 unlink("pipelines", recursive = TRUE)
 

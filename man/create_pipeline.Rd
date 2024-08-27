@@ -21,7 +21,7 @@ create_pipeline(
 
 \item{pipeline_dir}{directory containing the pipeline scripts}
 
-\item{frequency}{how often the pipeline should run (e.g., 1 day, 3 hours, 4 months). Fills in maestroFrequency tag}
+\item{frequency}{how often the pipeline should run (e.g., 1 day, daily, 3 hours, 4 months). Fills in maestroFrequency tag}
 
 \item{start_time}{start time of the pipeline schedule. Fills in maestroStartTime tag}
 
@@ -42,27 +42,26 @@ invisible
 Allows the creation of new pipelines (R scripts) and fills in the maestro tags as specified.
 }
 \examples{
-pipeline_dir <- tempdir()
-create_pipeline(
-  "extract_data",
-  pipeline_dir = pipeline_dir,
-  frequency = "1 hour",
-  open = FALSE,
-  quiet = TRUE,
-  overwrite = TRUE
-)
+if (interactive()) {
+  pipeline_dir <- tempdir()
+  create_pipeline(
+    "extract_data",
+    pipeline_dir = pipeline_dir,
+    frequency = "1 hour",
+    open = FALSE,
+    quiet = TRUE,
+    overwrite = TRUE
+  )
 
-create_pipeline(
-  "new_job",
-  pipeline_dir = pipeline_dir,
-  frequency = "20 minutes",
-  start_time = as.POSIXct("2024-06-21 12:20:00"),
-  log_level = "ERROR",
-  open = FALSE,
-  quiet = TRUE,
-  overwrite = TRUE
-)
-
-# Clean up
-if (!interactive()) unlink("pipelines", recursive = TRUE)
+  create_pipeline(
+    "new_job",
+    pipeline_dir = pipeline_dir,
+    frequency = "20 minutes",
+    start_time = as.POSIXct("2024-06-21 12:20:00"),
+    log_level = "ERROR",
+    open = FALSE,
+    quiet = TRUE,
+    overwrite = TRUE
+  )
+}
 }

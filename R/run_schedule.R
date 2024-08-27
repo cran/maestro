@@ -34,7 +34,7 @@
 #'
 #' @param schedule a table of scheduled pipelines generated from `build_schedule()`
 #' @inheritParams check_pipelines
-#' @param orch_frequency of the orchestrator, a single string formatted like "1 day" or "2 weeks"
+#' @param orch_frequency of the orchestrator, a single string formatted like "1 day", "2 weeks", "hourly", etc.
 #' @param resources named list of shared resources made available to pipelines as needed
 #' @param run_all run all pipelines regardless of the schedule (default is `FALSE`) - useful for testing.
 #' Does not apply to pipes with a `maestroSkip` tag.
@@ -50,19 +50,17 @@
 #' @importFrom R.utils countLines
 #' @export
 #' @examples
-#' pipeline_dir <- tempdir()
-#' create_pipeline("my_new_pipeline", pipeline_dir, open = FALSE, overwrite = TRUE)
-#' schedule <- build_schedule(pipeline_dir = pipeline_dir)
+#'
 #' # Runs the schedule every 1 day
 #' run_schedule(
-#'   schedule,
+#'   example_schedule,
 #'   orch_frequency = "1 day",
 #'   quiet = TRUE
 #' )
 #'
 #' # Runs the schedule every 15 minutes
 #' run_schedule(
-#'   schedule,
+#'   example_schedule,
 #'   orch_frequency = "15 minutes",
 #'   quiet = TRUE
 #' )
@@ -90,7 +88,7 @@ run_schedule <- function(
     cli::cli_abort(
       c(
         "Invalid `orch_frequency` {orch_frequency}.",
-        "i" = "Must be of the format like '1 day', '2 weeks', etc."
+        "i" = "Must be of the format like '1 day', '2 weeks', 'hourly', etc."
       ),
       call = NULL
     )
@@ -99,7 +97,7 @@ run_schedule <- function(
   # Additional parse using timechange to verify it isn't something like 500 days,
   # which isn't understood by timechange
   tryCatch({
-    timechange::time_round(Sys.time(), orch_frequency)
+    timechange::time_round(Sys.time(), paste(orch_nunits$n, orch_nunits$unit))
   }, error = \(e) {
     timechange_error_fmt <- gsub('\\..*', '', e$message)
     cli::cli_abort(
@@ -161,13 +159,18 @@ run_schedule <- function(
         pipeline_unit = schedule$frequency_unit,
         pipeline_n = schedule$frequency_n,
         pipeline_datetime = schedule$start_time,
-        check_datetime = check_datetime
+        check_datetime = check_datetime,
+        pipeline_hours = schedule$hours,
+        pipeline_days_of_week = schedule$days_of_week,
+        pipeline_days_of_month = schedule$days_of_month,
+        pipeline_months = schedule$months
       )
 
       schedule <- schedule |>
         dplyr::mutate(
           invoked = purrr::map_lgl(schedule_checks, ~.x$is_scheduled_now) & !skip,
-          next_run = purrr::map_vec(schedule_checks, ~.x$next_run)
+          next_run = purrr::map_vec(schedule_checks, ~.x$next_run),
+          next_run = dplyr::if_else(skip, NA, next_run)
         )
     } else {
 
@@ -382,6 +385,7 @@ run_schedule <- function(
     if (!run_all && n_show_next > 0 && nrow(schedule) > 0) {
 
       next_runs_cli <- status_table |>
+        dplyr::filter(!is.na(next_run)) |>
         dplyr::arrange(next_run) |>
         utils::head(n = n_show_next)
 
