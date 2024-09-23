@@ -403,12 +403,14 @@ system time using either <code>Sys.time()</code> or
 <span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="at">check_datetime =</span> <span class="fu">as.POSIXct</span>(<span class="st">&quot;2024-06-20 08:00:00&quot;</span>, <span class="at">tz =</span> <span class="st">&quot;UTC&quot;</span>)</span>
 <span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>)</span></code></pre></div>
 <pre><code>## 
-## ── Running pipelines ▶ 
-## ℹ ./pipelines/daily_example.R daily_example
-## ✔ ./pipelines/daily_example.R daily_example [21ms]
+## ── [2024-09-23 11:48:09]
+## Running pipelines ▶ 
+## ℹ daily_example
+## ✔ daily_example [13ms]
 ## 
 ## 
-## ── Pipeline execution completed ■ | 0.029 sec elapsed 
+## ── [2024-09-23 11:48:09]
+## Pipeline execution completed ■ | 0.018 sec elapsed 
 ## ✔ 1 success | → 0 skipped | ! 0 warnings | ✖ 0 errors | ◼ 1 total
 ## ────────────────────────────────────────────────────────────────────────────────
 ## 
@@ -427,11 +429,12 @@ orchestrator:</p>
 <span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="at">check_datetime =</span> <span class="fu">as.POSIXct</span>(<span class="st">&quot;2024-06-20 08:00:00&quot;</span>, <span class="at">tz =</span> <span class="st">&quot;UTC&quot;</span>)</span>
 <span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>)</span></code></pre></div>
 <pre><code>## </code></pre>
-<pre><code>## ── Running pipelines ▶</code></pre>
-<pre><code>## → ./pipelines/daily_example.R daily_example</code></pre>
+<pre><code>## ── [2024-09-23 11:48:09]
+## Running pipelines ▶</code></pre>
 <pre><code>## </code></pre>
-<pre><code>## ── Pipeline execution completed ■ | 0.002 sec elapsed</code></pre>
-<pre><code>## ✔ 0 successes | → 1 skipped | ! 0 warnings | ✖ 0 errors | ◼ 1 total</code></pre>
+<pre><code>## ── [2024-09-23 11:48:09]
+## Pipeline execution completed ■ | 0 sec elapsed</code></pre>
+<pre><code>## ✔ 1 success | → 0 skipped | ! 0 warnings | ✖ 0 errors | ◼ 1 total</code></pre>
 <pre><code>## ────────────────────────────────────────────────────────────────────────────────</code></pre>
 <pre><code>## </code></pre>
 <pre><code>## ── Next scheduled pipelines ❯</code></pre>
@@ -492,15 +495,11 @@ don’t run it so often that the pipelines can’t complete before the next
 execution time. We don’t recommend running the orchestrator more
 frequently than every 5 minutes unless you’re confident that your
 pipelines are fast to execute.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
-<p>Maestro has a function for providing a reasonable estimate for the
-ideal orchestrator frequency called
-<code>suggest_orch_frequency()</code>. It uses the heuristic of the most
-frequent interval halved (e.g., if your highest frequency pipeline is 1
-hour, it suggests 30 minutes) to a minimum 15 minutes or your most
-frequent interval if it’s less. This is a bit more conservative but
-protects against running things too often. If timeliness and high
-frequency are really important to you, maestro might not be your best
-choice.</p>
+<p>Maestro has a function for determining the ideal orchestrator
+frequency based on the pipeline frequencies in the project called
+<code>suggest_orch_frequency()</code>. It looks for the shortest
+interval of time between any future pipeline executions and suggests
+that for the frequency.</p>
 </div>
 </div>
 <div id="irregular-schedules" class="section level2">
@@ -515,14 +514,14 @@ hours. This could be useful, for example, if you have pipelines you only
 want to run during business hours. Use the <code>maestroHours</code> tag
 with integers corresponding to hours [0-23] separated by white space. Be
 sure to use the corresponding <code>maestroFrequency</code>.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="co">#&#39; specific_hours maestro pipeline</span></span>
-<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="co">#&#39;</span></span>
-<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency hourly</span></span>
-<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="co">#&#39; @maestroHours 6 9 12 15 18</span></span>
-<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>some_hours_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a></span>
-<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
-<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="co">#&#39; specific_hours maestro pipeline</span></span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a><span class="co">#&#39;</span></span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency hourly</span></span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a><span class="co">#&#39; @maestroHours 6 9 12 15 18</span></span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a>some_hours_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
+<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div id="days-of-weekdays-of-month" class="section level3">
 <h3>Days of week/days of month</h3>
@@ -530,50 +529,50 @@ sure to use the corresponding <code>maestroFrequency</code>.</p>
 of week or days of month. If doing days of week use strings like Mon,
 Tue, Wed, etc. If using days of month use integers [1-31]. You cannot
 specify both days of week and days of month.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="co">#&#39; specific_days_of_week maestro pipeline</span></span>
-<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a><span class="co">#&#39;</span></span>
-<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency daily</span></span>
-<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="co">#&#39; @maestroDays Mon Tue Wed Thu Fri</span></span>
-<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>some_dow_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a></span>
-<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
-<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a>}</span>
-<span id="cb21-9"><a href="#cb21-9" tabindex="-1"></a></span>
-<span id="cb21-10"><a href="#cb21-10" tabindex="-1"></a><span class="co">#&#39; specific_days_of_week maestro pipeline</span></span>
-<span id="cb21-11"><a href="#cb21-11" tabindex="-1"></a><span class="co">#&#39;</span></span>
-<span id="cb21-12"><a href="#cb21-12" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency daily</span></span>
-<span id="cb21-13"><a href="#cb21-13" tabindex="-1"></a><span class="co">#&#39; @maestroDays 1 14 28</span></span>
-<span id="cb21-14"><a href="#cb21-14" tabindex="-1"></a>some_dom_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb21-15"><a href="#cb21-15" tabindex="-1"></a></span>
-<span id="cb21-16"><a href="#cb21-16" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
-<span id="cb21-17"><a href="#cb21-17" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="co">#&#39; specific_days_of_week maestro pipeline</span></span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="co">#&#39;</span></span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency daily</span></span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="co">#&#39; @maestroDays Mon Tue Wed Thu Fri</span></span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>some_dow_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a>}</span>
+<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a></span>
+<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a><span class="co">#&#39; specific_days_of_week maestro pipeline</span></span>
+<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a><span class="co">#&#39;</span></span>
+<span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency daily</span></span>
+<span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a><span class="co">#&#39; @maestroDays 1 14 28</span></span>
+<span id="cb20-14"><a href="#cb20-14" tabindex="-1"></a>some_dom_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb20-15"><a href="#cb20-15" tabindex="-1"></a></span>
+<span id="cb20-16"><a href="#cb20-16" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
+<span id="cb20-17"><a href="#cb20-17" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div id="months-of-year" class="section level3">
 <h3>Months of year</h3>
 <p>If your pipeline runs at least monthly, you can run it on specific
 months. Use integers [1-12] to specify the months.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="co">#&#39; specific_months maestro pipeline</span></span>
-<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a><span class="co">#&#39;</span></span>
-<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency months</span></span>
-<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a><span class="co">#&#39; @maestroMonths 1 7 10</span></span>
-<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a>some_months <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a></span>
-<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
-<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="co">#&#39; specific_months maestro pipeline</span></span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a><span class="co">#&#39;</span></span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency months</span></span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="co">#&#39; @maestroMonths 1 7 10</span></span>
+<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>some_months <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
+<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a>}</span></code></pre></div>
 <p>Note that you can use combinations of these specifiers depending on
 the minimum frequency of the pipeline. For example, an hourly pipeline
 can run on specific hours and days. If you wanted a pipeline to only run
 on business hours including not on weekends. It could look like
 this:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="co">#&#39; business_hours maestro pipeline</span></span>
-<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a><span class="co">#&#39;</span></span>
-<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency hourly</span></span>
-<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a><span class="co">#&#39; @maestroHours 9 10 11 12 13 14 15 16 17</span></span>
-<span id="cb23-5"><a href="#cb23-5" tabindex="-1"></a><span class="co">#&#39; @maestroDays Mon Tue Wed Thu Fri</span></span>
-<span id="cb23-6"><a href="#cb23-6" tabindex="-1"></a>during_work_hours_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb23-7"><a href="#cb23-7" tabindex="-1"></a></span>
-<span id="cb23-8"><a href="#cb23-8" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
-<span id="cb23-9"><a href="#cb23-9" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="co">#&#39; business_hours maestro pipeline</span></span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a><span class="co">#&#39;</span></span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency hourly</span></span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a><span class="co">#&#39; @maestroHours 9 10 11 12 13 14 15 16 17</span></span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a><span class="co">#&#39; @maestroDays Mon Tue Wed Thu Fri</span></span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a>during_work_hours_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a></span>
+<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
+<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 </div>
 <div id="final-remarks" class="section level2">

@@ -454,20 +454,19 @@ we’ll use a regular R script. Here is where you’ll run
 <code>build_schedule()</code> and <code>run_schedule()</code>.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">library</span>(maestro)</span>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>schedule_table <span class="ot">&lt;-</span> <span class="fu">build_schedule</span>()</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">build_schedule</span>()</span>
 <span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a></span>
 <span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>output <span class="ot">&lt;-</span> <span class="fu">run_schedule</span>(</span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  schedule_table,</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  schedule,</span>
 <span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  <span class="at">orch_frequency =</span> <span class="st">&quot;1 hour&quot;</span></span>
 <span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>)</span></code></pre></div>
 <p>Building the schedule gets <code>maestro</code> to look through the
-pipelines in the pipelines folder and creates a data.frame with schedule
-information. Then, you pass that data.frame to
-<code>run_schedule()</code> along with how often the orchestrator is
-supposed to run. It is important to tell <code>maestro</code> how often
-it’ll be checking the pipelines using the <code>orch_frequency</code>
-parameter. Here, we’re informing it that the orchestrator is running
-every 1 hour.</p>
+pipelines in the pipelines folder and creates a schedule object. Then,
+you pass that to <code>run_schedule()</code> along with how often the
+orchestrator is supposed to run. It is important to tell
+<code>maestro</code> how often it’ll be checking the pipelines using the
+<code>orch_frequency</code> parameter. Here, we’re informing it that the
+orchestrator is running every 1 hour.</p>
 <p>Importantly, it isn’t <code>maestro</code>’s job to actually run it
 this often - it’s <em>your</em> job to make sure it runs at that
 frequency (e.g., deploying it via cron or some cloud environment where

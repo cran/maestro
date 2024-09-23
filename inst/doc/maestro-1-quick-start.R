@@ -51,10 +51,10 @@ my_pipe <- function() {
 ## ----orch, echo = TRUE, eval = FALSE, message = FALSE, warning = FALSE--------
 #  library(maestro)
 #  
-#  schedule_table <- build_schedule()
+#  schedule <- build_schedule()
 #  
 #  output <- run_schedule(
-#    schedule_table,
+#    schedule,
 #    orch_frequency = "1 hour"
 #  )
 

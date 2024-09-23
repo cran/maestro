@@ -25,10 +25,10 @@ knitr::opts_chunk$set(
 ## ----eval=FALSE---------------------------------------------------------------
 #  library(maestro)
 #  
-#  schedule_table <- build_schedule()
+#  schedule <- build_schedule()
 #  
 #  run_schedule(
-#    schedule_table,
+#    schedule,
 #    orch_frequency = "1 hour"
 #  )
 
