@@ -53,6 +53,19 @@ MaestroPipelineList <- R6::R6Class(
     },
 
     #' @description
+    #' Get a MaestroPipeline by its name
+    #' @param pipe_name name of the pipeline
+    #' @return MaestroPipeline
+    get_pipe_by_name = function(pipe_name) {
+      names <- self$get_pipe_names()
+      name_idx <- which(names %in% pipe_name)
+      if (length(name_idx) == 0) {
+        cli::cli_abort("No pipeline named {pipe_name} in {.cls MaestroPipelineListL}")
+      }
+      self$MaestroPipelines[[name_idx]]
+    },
+
+    #' @description
     #' Get the schedule as a data.frame
     #' @return data.frame
     get_schedule = function() {
@@ -68,6 +81,16 @@ MaestroPipelineList <- R6::R6Class(
       dots <- rlang::list2(...)
       timely_pipelines_idx <- do.call(self$check_timeliness, dots)
       MaestroPipelineList$new(self$MaestroPipelines[timely_pipelines_idx])
+    },
+
+    #' @description
+    #' Get pipelines that are primary (i.e., don't have an inputting pipeline)
+    #' @return list of MaestroPipelines
+    get_primary_pipes = function() {
+      network <- self$get_network()
+      names <- self$get_pipe_names()
+      primary_pipelines_idx <- which(!names %in% network$to)
+      self$MaestroPipelines[primary_pipelines_idx]
     },
 
     #' @description
@@ -121,6 +144,112 @@ MaestroPipelineList <- R6::R6Class(
     },
 
     #' @description
+    #' Get the network structure as a edge list
+    #' @return data.frame
+    get_network = function() {
+      if (!is.null(private$network)) return(private$network)
+
+      network <- dplyr::tibble(
+        from = character(),
+        to = character()
+      )
+
+      if (length(self$MaestroPipelines) > 0) {
+        network <- purrr::map(self$MaestroPipelines, ~{
+          network_dat <- dplyr::tibble(
+            from = character(),
+            to = character()
+          )
+          to <- .x$get_outputs()
+          from <- .x$get_inputs()
+          this <- .x$get_pipe_name()
+          if (!is.null(to)) {
+            network_dat <- network_dat |>
+              dplyr::bind_rows(
+                dplyr::tibble(
+                  from = this,
+                  to = to
+                )
+              )
+          }
+
+          if (!is.null(from)) {
+            network_dat <- network_dat |>
+              dplyr::bind_rows(
+                dplyr::tibble(
+                  from = from,
+                  to = this
+                )
+              )
+          }
+          network_dat
+        }) |>
+          purrr::list_rbind() |>
+          dplyr::distinct(from, to)
+      }
+
+      private$network <- network
+      network
+    },
+
+    #' @description
+    #' Validates whether all inputs and outputs exist and that the network is a valid DAG
+    #' @return warning or invisible
+    validate_network = function() {
+
+      pipe_names <- self$get_pipe_names()
+
+      inputs <- purrr::map(self$MaestroPipelines, ~.x$get_inputs()) |>
+        purrr::set_names(pipe_names) |>
+        purrr::keep(~!is.null(.x))
+
+      outputs <- purrr::map(self$MaestroPipelines, ~.x$get_outputs()) |>
+        purrr::set_names(pipe_names) |>
+        purrr::keep(~!is.null(.x))
+
+      if (length(inputs) > 0) {
+        withCallingHandlers({
+          purrr::iwalk(inputs, ~{
+            if (!all(.x %in% pipe_names)) {
+              invalid <- .x[which(!.x %in% pipe_names)]
+              cli::cli_abort(
+                "Pipeline {.pkg {.y}} references non-existent input pipeline{?s} {.pkg {invalid}}.",
+                call = NULL
+              )
+            }
+          })
+        }, purrr_error_indexed = function(err) {
+          rlang::cnd_signal(err$parent)
+        })
+      }
+
+      if (length(outputs) > 0) {
+        withCallingHandlers({
+          purrr::iwalk(outputs, ~{
+            if (!all(.x %in% pipe_names)) {
+              invalid <- .x[which(!.x %in% pipe_names)]
+              cli::cli_abort(
+                "Pipeline {.pkg {.y}} references non-existent output pipeline{?s} {.pkg {invalid}}.",
+                call = NULL
+              )
+            }
+          })
+        }, purrr_error_indexed = function(err) {
+          rlang::cnd_signal(err$parent)
+        })
+      }
+
+      network <- self$get_network()
+
+      if (!is_valid_dag(network)) {
+        cli::cli_abort(
+          "Invalid DAG detected. Ensure there are no cycles in the DAG.",
+          call = NULL
+        )
+      }
+    },
+
+    #' @description
     #' Runs all the pipelines in the list
     #' @param ... arguments passed to MaestroPipeline$run
     #' @param cores if using multicore number of cores to run in (uses `furrr`)
@@ -148,15 +277,39 @@ MaestroPipelineList <- R6::R6Class(
         }
       }
 
+      primary_pipes <- self$get_primary_pipes()
+      network <- self$get_network()
+
+      run_pipe <- function(pipe, .input = NULL, depth = -1, ...) {
+        depth <- min(depth + 1, 6)
+        do.call(pipe$run, append(dots, list(.input = .input, ...)))
+        .input <- pipe$get_artifacts()
+        out_names <- network$to[network$from == pipe$get_pipe_name()]
+        if (pipe$get_status_chr() == "Error") return(invisible())
+        if (length(out_names) == 0) return(invisible())
+        for (i in out_names) {
+          pipe <- self$get_pipe_by_name(i)
+          prepend <- paste0(rep("  ", times = depth), "|-")
+          run_pipe(
+            pipe,
+            .input = .input,
+            depth = depth,
+            cli_prepend = cli::format_inline(prepend)
+          )
+        }
+      }
+
       # Run the pipelines
       mapper_fun(
-        self$MaestroPipelines,
-        purrr::safely(~{
-          do.call(.x$run, dots)
-        }, quiet = TRUE)
+        primary_pipes,
+        purrr::safely(run_pipe, quiet = TRUE)
       )
 
       invisible()
     }
+  ),
+
+  private = list(
+    network = NULL
   )
 )

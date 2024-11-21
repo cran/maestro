@@ -13,7 +13,6 @@ coverage](https://codecov.io/gh/whipson/maestro/branch/main/graph/badge.svg)](ht
 Downloads](https://cranlogs.r-pkg.org/badges/grand-total/maestro)](https://CRAN.R-project.org/package=maestro)
 [![Monthly
 Downloads](https://cranlogs.r-pkg.org/badges/maestro)](https://cran.r-project.org/package=maestro)
-
 <!-- badges: end -->
 
 `maestro` is a lightweight framework for creating and orchestrating data
@@ -140,19 +139,3 @@ The function `build_schedule()` scours through all the pipelines in the
 project and builds a schedule. Then `run_schedule()` checks each
 pipeline’s scheduled time against the system time within some margin of
 rounding and calls those pipelines to run.
-
-### Multicore
-
-If you have several pipelines and/or pipelines that take awhile to run,
-it can be more efficient to split computation across multiple CPU cores.
-
-``` r
-library(furrr)
-
-plan(multisession)
-
-run_schedule(
-  schedule,
-  cores = 4
-)
-```

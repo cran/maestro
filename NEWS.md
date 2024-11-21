@@ -1,3 +1,25 @@
+# maestro 0.4.0
+
+### New features
+
+- Directed acyclic graph (DAG) pipelines - where the output of one pipeline can feed into another - are now available using the `maestroOutputs` and `maestroInputs` tags. Pipelines that input into a downstream pipeline should use the `maestroOutputs` tag. Pipelines that receive input from an upstream pipeline should use the `maestroInputs` tag (#98).
+
+- New function `show_network` for visualizing the connections between pipelines that are connected in a DAG.
+
+- `MaestroSchedule` gains new methods `get_network()` (returns a data.frame) and `show_network()` (returns a visualization using {DiagrammeR}).
+
+- Added catch-all `maestro` tag to identify a function as a pipeline without specifying other configurations.
+
+### Minor changes
+
+- skip argument added to `create_pipeline` to allow for interactive creation of pipelines that default to skip.
+
+### Bug fixes
+
+- Fixed issue with `suggest_orch_frequency` when using different styles of frequency (e.g., 1 day vs. daily) in a single schedule.
+
+- Fixed issue where pipeline sourcing failures were appearing as successful runs in status outputs.
+
 # maestro 0.3.0
 
 This version refactors much of the code base to rely on R6 classes for pipelines and schedules. Pay careful attention to the breaking changes to see how existing code may be impacted.

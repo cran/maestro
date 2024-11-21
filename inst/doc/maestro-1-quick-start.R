@@ -39,22 +39,22 @@ my_pipe <- function() {
 }
 
 ## ----example-pipe, echo = TRUE, eval = FALSE, message = FALSE, warning = FALSE----
-#  create_pipeline(
-#    pipe_name = "another_pipeline",
-#    pipeline_dir = "pipelines",
-#    frequency = "1 hour",
-#    start_time = "2024-05-17 15:00:00",
-#    tz = "America/Halifax",
-#    log_level = "ERROR"
-#  )
+# create_pipeline(
+#   pipe_name = "another_pipeline",
+#   pipeline_dir = "pipelines",
+#   frequency = "1 hour",
+#   start_time = "2024-05-17 15:00:00",
+#   tz = "America/Halifax",
+#   log_level = "ERROR"
+# )
 
 ## ----orch, echo = TRUE, eval = FALSE, message = FALSE, warning = FALSE--------
-#  library(maestro)
-#  
-#  schedule <- build_schedule()
-#  
-#  output <- run_schedule(
-#    schedule,
-#    orch_frequency = "1 hour"
-#  )
+# library(maestro)
+# 
+# schedule <- build_schedule()
+# 
+# output <- run_schedule(
+#   schedule,
+#   orch_frequency = "1 hour"
+# )
 
