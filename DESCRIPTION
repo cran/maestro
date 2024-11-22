@@ -1,7 +1,7 @@
 Package: maestro
 Type: Package
 Title: Orchestration of Data Pipelines
-Version: 0.4.0
+Version: 0.4.1
 Authors@R: 
     c(
       person("Will", "Hipson", , "will.e.hipson@gmail.com", role = c("cre", "aut", "cph"), 
@@ -26,8 +26,8 @@ Suggests: DiagrammeR, furrr, future, knitr, rmarkdown, rstudioapi,
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2024-11-21 17:57:59 UTC; willhipson
+Packaged: 2024-11-22 14:35:17 UTC; willhipson
 Author: Will Hipson [cre, aut, cph] (<https://orcid.org/0000-0002-3931-2189>),
   Ryan Garnett [aut, ctb, cph]
 Repository: CRAN
-Date/Publication: 2024-11-21 18:10:06 UTC
+Date/Publication: 2024-11-22 15:00:02 UTC

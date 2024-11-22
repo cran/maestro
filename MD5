@@ -1,9 +1,9 @@
-c9753285defbe21470c25f6d6a185b95 *DESCRIPTION
+227cc80f88c91cf59b8ec20ed324b196 *DESCRIPTION
 6b94dc6de511c6d1f59ad46c7467b926 *LICENSE
 6b786b46e61d582a3d67add89eb7c6de *NAMESPACE
-5dd22b5fc2d26385c5969f93e7005d51 *NEWS.md
-fdc5b601f47bd2d434220831132063c2 *R/MaestroPipeline.R
-1ea27cd5f757ef9d5950579a431eb868 *R/MaestroPipelineList.R
+8d86e9cf4fafd4027489b8ef5a3e0609 *NEWS.md
+691b489de783d88f6bef72f04e26df6a *R/MaestroPipeline.R
+53da4812455fa1eb3489e234b717c269 *R/MaestroPipelineList.R
 31c8f614f7fa33d0e1b0cfbb57689a7e *R/MaestroSchedule.R
 11ae64e07fcb6c433cd4e6f5f95e9774 *R/build_schedule.R
 356c867c2aa4d89aca24d5901511fe5c *R/build_schedule_entry.R
@@ -38,10 +38,10 @@ bf69f2e27e6e02d88e0a3dac9f949ab9 *inst/doc/maestro-3-use-cases.Rmd
 acda9cdbf2feca7ae3acd960db622f7b *inst/doc/maestro-3-use-cases.html
 eea3df2553f13eaf60c5e30e05f395c5 *inst/doc/maestro-4-advanced-scheduling.R
 20882cc33747219fb26727795c1ce794 *inst/doc/maestro-4-advanced-scheduling.Rmd
-2517e5d564a5e957ec9b40907aa715c6 *inst/doc/maestro-4-advanced-scheduling.html
+c0bb2e3c1157e3ac70c086f1e4f46fc9 *inst/doc/maestro-4-advanced-scheduling.html
 9cfdc70c1c52c311373f312eab524078 *inst/doc/maestro-5-directed-acyclic-graphs.R
 20150865f27f38261a7f2d6c5c34148a *inst/doc/maestro-5-directed-acyclic-graphs.Rmd
-6ddbd9e04819bca1cdd9437230a2d94a *inst/doc/maestro-5-directed-acyclic-graphs.html
+1ae10f7f6cf9b70307c07f8677c2720d *inst/doc/maestro-5-directed-acyclic-graphs.html
 e7f4fbf11b22daf75c7796de9fe8322e *inst/orchestrator_template
 d15b5b4ff62a7100cf60323faae319bb *inst/orchestrator_template_qmd
 2571f228227ebd660457219891bb70cb *inst/pipeline_template
@@ -50,8 +50,8 @@ d15b5b4ff62a7100cf60323faae319bb *inst/orchestrator_template_qmd
 5dbcc762e363b6c4558dd657b5e6eb0c *inst/rstudio/templates/project/maestro.png
 11469f8a4bb828e30135e88b03854f4b *inst/sample_pipeline_dir/pipe1.R
 7ee5d1b6ef43739ce9f098aa92bb978a *inst/sample_pipeline_dir/pipe2.R
-556c7ae9b1de1b9ac87317d4f5071a76 *man/MaestroPipeline.Rd
-8921cc4ba7621579b1e387cc0dc10634 *man/MaestroPipelineList.Rd
+7578b8c84b94fb637b660c3dbe8526c5 *man/MaestroPipeline.Rd
+7b9cc1a5277ea9496647db316e1365cb *man/MaestroPipelineList.Rd
 20fd247d64435e03bce75389773a1c5a *man/MaestroSchedule.Rd
 b53166c18efef5d54836c7b24dfe0eee *man/build_schedule.Rd
 011200fc2d381384f7c870d6cdd862e3 *man/build_schedule_entry.Rd
@@ -88,7 +88,7 @@ e6ca406359f0c8d83fe82dc137ab687b *man/run_schedule.Rd
 3e254e564c34c3193c87df69cd124a33 *tests/testthat/_snaps/MaestroPipeline.md
 34185c83c50053eb57e5a9d3973c9fea *tests/testthat/_snaps/MaestroPipelineList.md
 6a031b25062270523c95443f6a2c2458 *tests/testthat/_snaps/MaestroSchedule.md
-f3af013232f8f466781b6a536d951f73 *tests/testthat/_snaps/dags.md
+3093e29c4837d3a3885116bbc0281416 *tests/testthat/_snaps/dags.md
 766cea300078b7075fe00332f00756a5 *tests/testthat/_snaps/get_schedule.md
 36652a778b7733976964beba73f00bd5 *tests/testthat/_snaps/run_schedule.md
 cbaa43e68925215f22983259d8b09ade *tests/testthat/test-MaestroPipeline.R
@@ -99,7 +99,7 @@ aa93831b9b74612ed88444e4e706dad7 *tests/testthat/test-MaestroPipelineList.R
 cf6b3b0de7a2f480607fcb9061d23ea4 *tests/testthat/test-create_maestro.R
 60657aaa86883d379fabcf3f18d64e4f *tests/testthat/test-create_orchestrator.R
 636f40a0111da5a54a6083c833f096e6 *tests/testthat/test-create_pipeline.R
-06cb3c1325ab5ff3a5b1e292685b0035 *tests/testthat/test-dags.R
+9d3e1e3e60cf221def9dc30cdd9d4324 *tests/testthat/test-dags.R
 aedcc7efc2fd5b800341f62827437a12 *tests/testthat/test-get_artifacts.R
 3116131c2d6b89ff5cd30a6be9105508 *tests/testthat/test-get_schedule.R
 ed23544a87d0857dc29591620cdf403d *tests/testthat/test-get_status.R
