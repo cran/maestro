@@ -1,7 +1,7 @@
 Package: maestro
 Type: Package
 Title: Orchestration of Data Pipelines
-Version: 0.4.1
+Version: 0.5.0
 Authors@R: 
     c(
       person("Will", "Hipson", , "will.e.hipson@gmail.com", role = c("cre", "aut", "cph"), 
@@ -21,13 +21,13 @@ Imports: cli (>= 3.3.0), dplyr (>= 1.1.0), glue, lifecycle, logger,
         1.0.0), roxygen2, tictoc, timechange, utils
 RoxygenNote: 7.3.2
 Depends: R (>= 4.1.0)
-Suggests: DiagrammeR, furrr, future, knitr, rmarkdown, rstudioapi,
-        testthat (>= 3.0.0), withr
+Suggests: asciicast, DiagrammeR, furrr, future, knitr, quarto,
+        rmarkdown, rstudioapi, testthat (>= 3.0.0), withr
 Config/testthat/edition: 3
-VignetteBuilder: knitr
+VignetteBuilder: knitr, quarto
 NeedsCompilation: no
-Packaged: 2024-11-22 14:35:17 UTC; willhipson
+Packaged: 2025-01-07 13:06:07 UTC; willhipson
 Author: Will Hipson [cre, aut, cph] (<https://orcid.org/0000-0002-3931-2189>),
   Ryan Garnett [aut, ctb, cph]
 Repository: CRAN
-Date/Publication: 2024-11-22 15:00:02 UTC
+Date/Publication: 2025-01-07 13:40:02 UTC

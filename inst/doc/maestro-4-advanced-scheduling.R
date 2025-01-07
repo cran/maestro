@@ -1,3 +1,25 @@
+## -----------------------------------------------------------------------------
+#| echo: false
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "",
+  out.width = "100%",
+  cache = FALSE,
+  asciicast_knitr_output = "html"
+)
+
+asciicast::init_knitr_engine(
+  echo = TRUE,
+  echo_input = FALSE,
+  same_process = TRUE,
+  startup = quote({
+    library(maestro)
+    set.seed(1) 
+  })
+)
+options(asciicast_theme = "pkgdown")
+
+
 ## ----echo=FALSE, warning=FALSE, message=FALSE---------------------------------
 dir.create("pipelines")
 writeLines(
@@ -15,6 +37,7 @@ writeLines(
   con = "pipelines/daily_example.R"
 )
 
+
 ## ----eval=FALSE---------------------------------------------------------------
 # # ./pipelines/daily_example.R
 # #' daily_example maestro pipeline
@@ -26,26 +49,25 @@ writeLines(
 #   # Pipeline code
 # }
 
-## -----------------------------------------------------------------------------
-# ./orchestrator.R
 
-library(maestro)
+## # ./orchestrator.R
+## 
+## library(maestro)
+## 
+## schedule <- build_schedule()
+## 
+## status <- run_schedule(
+##   schedule,
+##   orch_frequency = "1 day",
+##   check_datetime = as.POSIXct("2024-06-20 08:00:00", tz = "UTC")
+## )
 
-schedule <- build_schedule()
-
-status <- run_schedule(
-  schedule,
-  orch_frequency = "1 day",
-  check_datetime = as.POSIXct("2024-06-20 08:00:00", tz = "UTC")
-)
-
-## -----------------------------------------------------------------------------
-# ./orchestrator.R
-status <- run_schedule(
-  schedule,
-  orch_frequency = "15 minutes",
-  check_datetime = as.POSIXct("2024-06-20 08:00:00", tz = "UTC")
-)
+## # ./orchestrator.R
+## status <- run_schedule(
+##   schedule,
+##   orch_frequency = "15 minutes",
+##   check_datetime = as.POSIXct("2024-06-20 08:00:00", tz = "UTC")
+## )
 
 ## ----echo=FALSE---------------------------------------------------------------
 data.frame(
@@ -54,12 +76,14 @@ data.frame(
   start_time = as.POSIXct(c("2024-06-18 12:30:00", "2024-06-18 06:00:00", "2024-06-20 00:00:00"))
 )
 
+
 ## ----echo=FALSE---------------------------------------------------------------
 data.frame(
   name = paste0("pipe", 4:6),
   frequency = c("1 hour", "1 hour", "1 hour"),
   start_time = as.POSIXct(c("2024-06-18 00:00:00", "2024-06-18 00:10:00", "2024-06-18 00:20:00"))
 )
+
 
 ## ----eval=FALSE---------------------------------------------------------------
 # #' specific_hours maestro pipeline
@@ -70,6 +94,7 @@ data.frame(
 # 
 #   # Pipeline code
 # }
+
 
 ## ----eval=FALSE---------------------------------------------------------------
 # #' specific_days_of_week maestro pipeline
@@ -90,6 +115,7 @@ data.frame(
 #   # Pipeline code
 # }
 
+
 ## ----eval=FALSE---------------------------------------------------------------
 # #' specific_months maestro pipeline
 # #'
@@ -99,6 +125,7 @@ data.frame(
 # 
 #   # Pipeline code
 # }
+
 
 ## ----eval=FALSE---------------------------------------------------------------
 # #' business_hours maestro pipeline
@@ -110,6 +137,7 @@ data.frame(
 # 
 #   # Pipeline code
 # }
+
 
 ## ----cleanup, echo=FALSE, message=FALSE, warning=FALSE------------------------
 unlink("pipelines", recursive = TRUE)

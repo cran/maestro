@@ -1,24 +1,57 @@
-## ----include = FALSE----------------------------------------------------------
+## -----------------------------------------------------------------------------
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+  collapse = FALSE,
+  comment = "",
+  out.width = "100%",
+  cache = FALSE,
+  asciicast_knitr_output = "html"
 )
+
+asciicast::init_knitr_engine(
+  echo = TRUE,
+  echo_input = FALSE,
+  same_process = TRUE,
+  startup = quote({
+    library(maestro)
+    set.seed(1) 
+  })
+)
+
+options(asciicast_theme = "pkgdown")
 
 ## -----------------------------------------------------------------------------
 library(maestro)
 
-## -----------------------------------------------------------------------------
-#' my_pipe maestro pipeline
-#'
-#' @maestroFrequency 1 day
-#' @maestroStartTime 2024-05-24
-#' @maestroTz UTC
-#' @maestroLogLevel INFO
+## ----echo=FALSE, error=FALSE, warning=FALSE, message=FALSE--------------------
+dir.create("pipelines")
+writeLines(
+  "
+  #' my_pipe maestro pipeline
+  #'
+  #' @maestroFrequency 1 day
+  #' @maestroStartTime 2024-05-24
+  #' @maestroTz UTC
+  #' @maestroLogLevel INFO
+  
+  my_pipe <- function() {
+  
+    # Pipeline code
+  }",
+  con = "pipelines/my_pipe.R"
+)
 
-my_pipe <- function() {
-
-  # Pipeline code
-}
+## ----eval=FALSE---------------------------------------------------------------
+# #' my_pipe maestro pipeline
+# #'
+# #' @maestroFrequency 1 day
+# #' @maestroStartTime 2024-05-24
+# #' @maestroTz UTC
+# #' @maestroLogLevel INFO
+# 
+# my_pipe <- function() {
+# 
+#   # Pipeline code
+# }
 
 ## -----------------------------------------------------------------------------
 #' my_pipe maestro pipeline
@@ -38,7 +71,7 @@ my_pipe <- function() {
   write.csv(random_data, file = tempfile())
 }
 
-## ----example-pipe, echo = TRUE, eval = FALSE, message = FALSE, warning = FALSE----
+## ----example-pipe-------------------------------------------------------------
 # create_pipeline(
 #   pipe_name = "another_pipeline",
 #   pipeline_dir = "pipelines",
@@ -48,13 +81,6 @@ my_pipe <- function() {
 #   log_level = "ERROR"
 # )
 
-## ----orch, echo = TRUE, eval = FALSE, message = FALSE, warning = FALSE--------
-# library(maestro)
-# 
-# schedule <- build_schedule()
-# 
-# output <- run_schedule(
-#   schedule,
-#   orch_frequency = "1 hour"
-# )
+## ----cleanup, echo=FALSE, message=FALSE, warning=FALSE------------------------
+unlink("pipelines", recursive = TRUE)
 

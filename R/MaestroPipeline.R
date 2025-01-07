@@ -134,6 +134,7 @@ MaestroPipeline <- R6::R6Class(
     #' @param log_file_max_bytes maximum bytes of the log file before trimming
     #' @param .input input values from upstream pipelines
     #' @param cli_prepend text to prepend to cli output
+    #' @param log_to_console whether or not to output statements in the console (FALSE is to suppress and append to log)
     #' @param ... additional arguments (unused)
     #'
     #' @return invisible
@@ -144,6 +145,7 @@ MaestroPipeline <- R6::R6Class(
       log_file_max_bytes = 1e6,
       .input = NULL,
       cli_prepend = "",
+      log_to_console = FALSE,
       ...
     ) {
 
@@ -157,10 +159,16 @@ MaestroPipeline <- R6::R6Class(
         cli::cli_progress_step("{cli_prepend}{cli::col_blue(pipe_name)}")
       }
 
+      if (log_to_console) {
+        logger_fun <- logger::appender_tee
+      } else {
+        logger_fun <- logger::appender_file
+      }
+
       # Set the logger to null - we just want the text in a variable
       logger::log_threshold(level = log_level, namespace = pipe_name)
       logger::log_appender(
-        appender = logger::appender_file(log_file, max_bytes = log_file_max_bytes),
+        appender = logger_fun(log_file, max_bytes = log_file_max_bytes),
         namespace = pipe_name
       )
       logger::log_layout(maestro_logger, namespace = pipe_name)
@@ -205,15 +213,15 @@ MaestroPipeline <- R6::R6Class(
     #' @return data.frame
     get_schedule = function() {
       dplyr::tibble(
-        script_path = private$script_path,
-        pipe_name = private$pipe_name,
-        frequency = private$frequency,
-        start_time = private$start_time,
-        tz = private$tz,
-        skip = private$skip,
-        log_level = private$log_level,
-        frequency_n = private$frequency_n,
-        frequency_unit = private$frequency_unit
+        script_path = private$script_path %n% character(),
+        pipe_name = private$pipe_name %n% character(),
+        frequency = private$frequency %n% character(),
+        start_time = private$start_time %n% lubridate::POSIXct(),
+        tz = private$tz %n% character(),
+        skip = private$skip %n% logical(),
+        log_level = private$log_level %n% character(),
+        frequency_n = private$frequency_n %n% integer(),
+        frequency_unit = private$frequency_unit %n% character()
       )
     },
 
@@ -260,7 +268,7 @@ MaestroPipeline <- R6::R6Class(
         pipeline_months = private$months
       )
 
-      next_run <- purrr::pluck(future_sequence, 2)
+      next_run <- future_sequence[future_sequence > check_datetime][[1]]
 
       if (is.null(next_run)) {
         pipeline_frequency_seconds <- convert_to_seconds(paste(private$frequency_n, private$frequency_unit))
@@ -403,14 +411,14 @@ MaestroPipeline <- R6::R6Class(
 
     warning_handler = function(w) {
       warning_log <- logger::log_warn(conditionMessage(w), namespace = private$pipe_name)
-      private$warnings <- c(private$warnings, warning_log$default$record)
+      private$warnings <- c(private$warnings, w$message)
       private$status <- "Warning"
       invokeRestart("muffleWarning")
     },
 
     message_handler = function(m) {
       message_log <- logger::log_info(conditionMessage(m), namespace = private$pipe_name)
-      private$messages <- c(private$messages, message_log$default$record)
+      private$messages <- c(private$messages, m$message)
       invokeRestart("muffleMessage")
     }
   )

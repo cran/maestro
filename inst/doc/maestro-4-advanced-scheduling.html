@@ -1,53 +1,26 @@
 <!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
-<html>
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.56">
 
-<head>
-
-<meta charset="utf-8" />
-<meta name="generator" content="pandoc" />
-<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
-
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
 <title>Advanced Scheduling</title>
-
-<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
-// be compatible with the behavior of Pandoc < 2.8).
-document.addEventListener('DOMContentLoaded', function(e) {
-  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
-  var i, h, a;
-  for (i = 0; i < hs.length; i++) {
-    h = hs[i];
-    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
-    a = h.attributes;
-    while (a.length > 0) h.removeAttribute(a[0].name);
-  }
-});
-</script>
-
-<style type="text/css">
+<style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
-span.underline{text-decoration: underline;}
-div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
-</style>
-
-
-
-<style type="text/css">
-code {
-white-space: pre;
+ul.task-list li input[type="checkbox"] {
+width: 0.8em;
+margin: 0 0.8em 0.2em -1em;  vertical-align: middle;
 }
-.sourceCode {
-overflow: visible;
-}
-</style>
-<style type="text/css" data-origin="pandoc">
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
@@ -112,503 +85,201 @@ code span.va { color: #19177c; }
 code span.vs { color: #4070a0; } 
 code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
 </style>
-<script>
-// apply pandoc div.sourceCode style to pre.sourceCode instead
-(function() {
-  var sheets = document.styleSheets;
-  for (var i = 0; i < sheets.length; i++) {
-    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
-    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    var j = 0;
-    while (j < rules.length) {
-      var rule = rules[j];
-      // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
-        j++;
-        continue;
-      }
-      var style = rule.style.cssText;
-      // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') {
-        j++;
-        continue;
-      }
-      // replace div.sourceCode by a pre.sourceCode rule
-      sheets[i].deleteRule(j);
-      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
-    }
-  }
-})();
-</script>
 
 
 
 
-<style type="text/css">body {
-background-color: #fff;
-margin: 1em auto;
-max-width: 700px;
-overflow: visible;
-padding-left: 2em;
-padding-right: 2em;
-font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-font-size: 14px;
-line-height: 1.35;
-}
-#TOC {
-clear: both;
-margin: 0 0 10px 10px;
-padding: 4px;
-width: 400px;
-border: 1px solid #CCCCCC;
-border-radius: 5px;
-background-color: #f6f6f6;
-font-size: 13px;
-line-height: 1.3;
-}
-#TOC .toctitle {
-font-weight: bold;
-font-size: 15px;
-margin-left: 5px;
-}
-#TOC ul {
-padding-left: 40px;
-margin-left: -1.5em;
-margin-top: 5px;
-margin-bottom: 5px;
-}
-#TOC ul ul {
-margin-left: -2em;
-}
-#TOC li {
-line-height: 16px;
-}
-table {
-margin: 1em auto;
-border-width: 1px;
-border-color: #DDDDDD;
-border-style: outset;
-border-collapse: collapse;
-}
-table th {
-border-width: 2px;
-padding: 5px;
-border-style: inset;
-}
-table td {
-border-width: 1px;
-border-style: inset;
-line-height: 18px;
-padding: 5px 5px;
-}
-table, table th, table td {
-border-left-style: none;
-border-right-style: none;
-}
-table thead, table tr.even {
-background-color: #f7f7f7;
-}
-p {
-margin: 0.5em 0;
-}
-blockquote {
-background-color: #f6f6f6;
-padding: 0.25em 0.75em;
-}
-hr {
-border-style: solid;
-border: none;
-border-top: 1px solid #777;
-margin: 28px 0;
-}
-dl {
-margin-left: 0;
-}
-dl dd {
-margin-bottom: 13px;
-margin-left: 13px;
-}
-dl dt {
-font-weight: bold;
-}
-ul {
-margin-top: 0;
-}
-ul li {
-list-style: circle outside;
-}
-ul ul {
-margin-bottom: 0;
-}
-pre, code {
-background-color: #f7f7f7;
-border-radius: 3px;
-color: #333;
-white-space: pre-wrap; 
-}
-pre {
-border-radius: 3px;
-margin: 5px 0px 10px 0px;
-padding: 10px;
-}
-pre:not([class]) {
-background-color: #f7f7f7;
-}
-code {
-font-family: Consolas, Monaco, 'Courier New', monospace;
-font-size: 85%;
-}
-p > code, li > code {
-padding: 2px 0px;
-}
-div.figure {
-text-align: center;
-}
-img {
-background-color: #FFFFFF;
-padding: 2px;
-border: 1px solid #DDDDDD;
-border-radius: 3px;
-border: 1px solid #CCCCCC;
-margin: 0 5px;
-}
-h1 {
-margin-top: 0;
-font-size: 35px;
-line-height: 40px;
-}
-h2 {
-border-bottom: 4px solid #f7f7f7;
-padding-top: 10px;
-padding-bottom: 2px;
-font-size: 145%;
-}
-h3 {
-border-bottom: 2px solid #f7f7f7;
-padding-top: 10px;
-font-size: 120%;
-}
-h4 {
-border-bottom: 1px solid #f7f7f7;
-margin-left: 8px;
-font-size: 105%;
-}
-h5, h6 {
-border-bottom: 1px solid #ccc;
-font-size: 105%;
-}
-a {
-color: #0033dd;
-text-decoration: none;
-}
-a:hover {
-color: #6666ff; }
-a:visited {
-color: #800080; }
-a:visited:hover {
-color: #BB00BB; }
-a[href^="http:"] {
-text-decoration: underline; }
-a[href^="https:"] {
-text-decoration: underline; }
-
-code > span.kw { color: #555; font-weight: bold; } 
-code > span.dt { color: #902000; } 
-code > span.dv { color: #40a070; } 
-code > span.bn { color: #d14; } 
-code > span.fl { color: #d14; } 
-code > span.ch { color: #d14; } 
-code > span.st { color: #d14; } 
-code > span.co { color: #888888; font-style: italic; } 
-code > span.ot { color: #007020; } 
-code > span.al { color: #ff0000; font-weight: bold; } 
-code > span.fu { color: #900; font-weight: bold; } 
-code > span.er { color: #a61717; background-color: #e3d2d2; } 
-</style>
-
-
-
-
+<style type="text/css">body {background-color: #fff;margin: 1em auto;max-width: 700px;overflow: visible;padding-left: 2em;padding-right: 2em;font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;font-size: 14px;line-height: 1.35;}table {margin: 1em auto;border-width: 1px;border-color: #DDDDDD;border-style: outset;border-collapse: collapse;}table th {border-width: 2px;padding: 5px;border-style: inset;}table td {border-width: 1px;border-style: inset;line-height: 18px;padding: 5px 5px;}table, table th, table td {border-left-style: none;border-right-style: none;}table thead, table tr.even {background-color: #f7f7f7;}p {margin: 0.5em 0;}blockquote {background-color: #f6f6f6;padding: 0.25em 0.75em;}hr {border-style: solid;border: none;border-top: 1px solid #777;margin: 28px 0;}dl {margin-left: 0;}dl dd {margin-bottom: 13px;margin-left: 13px;}dl dt {font-weight: bold;}ul {margin-top: 0;}ul li {list-style: circle outside;}ul ul {margin-bottom: 0;}pre, code {background-color: #f7f7f7;border-radius: 3px;color: #333;white-space: pre-wrap; }pre {border-radius: 3px;margin: 5px 0px 10px 0px;padding: 10px;}pre:not([class]) {background-color: #f7f7f7;}code {font-family: Consolas, Monaco, 'Courier New', monospace;font-size: 85%;}p > code, li > code {padding: 2px 0px;}div.figure {text-align: center;}img {background-color: #FFFFFF;padding: 2px;border: 1px solid #DDDDDD;border-radius: 3px;border: 1px solid #CCCCCC;margin: 0 5px;}h1 {margin-top: 0;font-size: 35px;line-height: 40px;}h2 {border-bottom: 4px solid #f7f7f7;padding-top: 10px;padding-bottom: 2px;font-size: 145%;}h3 {border-bottom: 2px solid #f7f7f7;padding-top: 10px;font-size: 120%;}h4 {border-bottom: 1px solid #f7f7f7;margin-left: 8px;font-size: 105%;}h5, h6 {border-bottom: 1px solid #ccc;font-size: 105%;}a {color: #0033dd;text-decoration: none;}a:hover {color: #6666ff; }a:visited {color: #800080; }a:visited:hover {color: #BB00BB; }a[href^="http:"] {text-decoration: underline; }a[href^="https:"] {text-decoration: underline; }</style>
 </head>
 
 <body>
 
 
+<header id="title-block-header">
+<h1 class="title">Advanced Scheduling</h1>
+
+</header>
 
 
-<h1 class="title toc-ignore">Advanced Scheduling</h1>
-
-
-
-<p>This vignette covers more advanced concepts and examples related to
-scheduling. At it’s core, maestro adheres to two keys principles:</p>
-<ol style="list-style-type: decimal">
-<li>Stateless: It does not need to be continuously running - it can be
-run in a serverless architecture</li>
-<li>Use of <em>rounded scheduling</em>: The timeliness of pipeline
-executions depends on how often you run your orchestrator</li>
+<p>This vignette covers more advanced concepts and examples related to scheduling. At it’s core, maestro adheres to two keys principles:</p>
+<ol type="1">
+<li>Stateless: It does not need to be continuously running - it can be run in a serverless architecture</li>
+<li>Use of <em>rounded scheduling</em>: The timeliness of pipeline executions depends on how often you run your orchestrator</li>
 </ol>
-<p>Here, we’ll explain these concepts more deeply in the context of
-maestro and give some concrete examples.</p>
-<div id="stateless-execution" class="section level2">
-<h2>Stateless Execution</h2>
-<p>Maestro takes a unique approach to scheduling compared to other
-orchestration tools. Whereas most schedulers involve a continuously
-running program to monitor the time and execute jobs when the current
-time is right, maestro is designed to run intermittently. It also
-doesn’t need to save or cache data between executions - in other words,
-it’s <em>stateless</em>.</p>
-<p>This design has several benefits; namely, you can run it in a
-serverless way which saves on compute resources. However, to achieve
-this it takes some shortcuts which may mean that precise timeliness is
-lost. This will become clearer in our examples.</p>
-</div>
-<div id="rounded-scheduling" class="section level2">
-<h2>Rounded Scheduling</h2>
-<p>The timeliness of a pipeline is measured in how close the scheduled
-execution time is to the actual execution time. <strong>Maestro is only
-as timely as it needs to be relative to the unit of time you are
-interested in</strong>. This is the concept of <em>rounded
-scheduling</em>. If you run your orchestrator once daily, then the
-timeliness of the pipelines will be within the nearest day - it doesn’t
-care that you specified a pipeline to run at exactly 09:21:20 each day.
-If you run it every 10 minutes, then the timeliness of the pipelines
-will be within the nearest 10 minute interval.</p>
+<p>Here, we’ll explain these concepts more deeply in the context of maestro and give some concrete examples.</p>
+<h2 id="stateless-execution">Stateless Execution</h2>
+<p>Maestro takes a unique approach to scheduling compared to other orchestration tools. Whereas most schedulers involve a continuously running program to monitor the time and execute jobs when the current time is right, maestro is designed to run intermittently. It also doesn’t need to save or cache data between executions - in other words, it’s <em>stateless</em>.</p>
+<p>This design has several benefits; namely, you can run it in a serverless way which saves on compute resources. However, to achieve this it takes some shortcuts which may mean that precise timeliness is lost. This will become clearer in our examples.</p>
+<h2 id="rounded-scheduling">Rounded Scheduling</h2>
+<p>The timeliness of a pipeline is measured in how close the scheduled execution time is to the actual execution time. <strong>Maestro is only as timely as it needs to be relative to the unit of time you are interested in</strong>. This is the concept of <em>rounded scheduling</em>. If you run your orchestrator once daily, then the timeliness of the pipelines will be within the nearest day - it doesn’t care that you specified a pipeline to run at exactly 09:21:20 each day. If you run it every 10 minutes, then the timeliness of the pipelines will be within the nearest 10 minute interval.</p>
 <p>Let’s look at some examples:</p>
-<p>First, we’ll consider one pipeline that is scheduled to run daily at
-09:20:00 and we’ll configure the orchestrator to run daily.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># ./pipelines/daily_example.R</span></span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co">#&#39; daily_example maestro pipeline</span></span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co">#&#39;</span></span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency 1 day</span></span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&#39; @maestroStartTime 2024-06-20 09:20:00</span></span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>daily_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
-<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>}</span></code></pre></div>
-<p>For demonstration purposes, I’ll manually set the check time to be
-08:00:00 UTC (this is the time maestro will use to compare against the
-scheduled time). In practice, you almost always want this to be the
-system time using either <code>Sys.time()</code> or
-<code>lubridate::now()</code>.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># ./orchestrator.R</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">library</span>(maestro)</span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">build_schedule</span>()</span></code></pre></div>
-<pre><code>## ℹ 1 script successfully parsed</code></pre>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>status <span class="ot">&lt;-</span> <span class="fu">run_schedule</span>(</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  schedule,</span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="at">orch_frequency =</span> <span class="st">&quot;1 day&quot;</span>,</span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="at">check_datetime =</span> <span class="fu">as.POSIXct</span>(<span class="st">&quot;2024-06-20 08:00:00&quot;</span>, <span class="at">tz =</span> <span class="st">&quot;UTC&quot;</span>)</span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>)</span></code></pre></div>
-<pre><code>## 
-## ── [2024-11-22 10:35:12]
-## Running pipelines ▶ 
-## ℹ daily_example
-## ✔ daily_example [15ms]
-## 
-## 
-## ── [2024-11-22 10:35:12]
-## Pipeline execution completed ■ | 0.021 sec elapsed 
-## ✔ 1 success | → 0 skipped | ! 0 warnings | ✖ 0 errors | ◼ 1 total
-## ────────────────────────────────────────────────────────────────────────────────
-## 
-## ── Next scheduled pipelines ❯ 
-## Pipe name | Next scheduled run
-## • daily_example | 2024-06-21</code></pre>
-<p>We can see that the pipeline executed even though the current time
-was not 09:20:00. This is because we set the orchestrator to run daily
-and so it considers it close enough to within a day.</p>
-<p>Let’s see what happens if we up the frequency of the
-orchestrator:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># ./orchestrator.R</span></span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>status <span class="ot">&lt;-</span> <span class="fu">run_schedule</span>(</span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  schedule,</span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="at">orch_frequency =</span> <span class="st">&quot;15 minutes&quot;</span>,</span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="at">check_datetime =</span> <span class="fu">as.POSIXct</span>(<span class="st">&quot;2024-06-20 08:00:00&quot;</span>, <span class="at">tz =</span> <span class="st">&quot;UTC&quot;</span>)</span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>)</span></code></pre></div>
-<pre><code>## </code></pre>
-<pre><code>## ── [2024-11-22 10:35:12]
-## Running pipelines ▶</code></pre>
-<pre><code>## </code></pre>
-<pre><code>## ── [2024-11-22 10:35:12]
-## Pipeline execution completed ■ | 0.001 sec elapsed</code></pre>
-<pre><code>## ✔ 1 success | → 0 skipped | ! 0 warnings | ✖ 0 errors | ◼ 1 total</code></pre>
-<pre><code>## ────────────────────────────────────────────────────────────────────────────────</code></pre>
-<pre><code>## </code></pre>
-<pre><code>## ── Next scheduled pipelines ❯</code></pre>
-<pre><code>## Pipe name | Next scheduled run</code></pre>
-<pre><code>## • daily_example | 2024-06-21 09:15:00</code></pre>
-<p>It was skipped because it wasn’t within a 15 minute degree of
-difference but the output tells us that will next run at
-<code>2024-06-20 09:15:00</code>.<br />
-<br />
-The takeaway message is that the timeliness of the pipeline depends on
-how frequently the orchestrator runs. Remember that when you declare the
-<code>orch_frequency = &quot;15 minutes&quot;</code> that is essentially a
-contract stating that you <em>will</em> run it every 15 minutes -
-maestro does not do this for you. If you run the orchestrator more or
-less frequently than you said you would unexpected things will happen.
-Specifically, if you run it more frequently than stated, your pipelines
-will run more often than expected, likewise less frequently than stated
-means that pipelines won’t run as often.</p>
+<p>First, we’ll consider one pipeline that is scheduled to run daily at 09:20:00 and we’ll configure the orchestrator to run daily.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ./pipelines/daily_example.R</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; daily_example maestro pipeline</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency 1 day</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroStartTime 2024-06-20 09:20:00</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>daily_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 </div>
-<div id="how-often-should-i-schedule-my-orchestrator" class="section level2">
-<h2><em>How often should I schedule my orchestrator?</em></h2>
-<p>If you have a single pipeline or even multiple pipelines that all run
-at the same time this is an easy question to answer. In practice (and in
-our experience using maestro in production) you have multiple pipelines
-that run at different intervals and different times. Maybe some run
-hourly, some run daily, and others run monthly.</p>
-<div id="example-1" class="section level3">
-<h3>Example 1</h3>
-<p>Let’s say we have three pipelines with the following frequencies and
-start times:</p>
-<pre><code>##    name frequency          start_time
-## 1 pipe1    1 hour 2024-06-18 12:30:00
-## 2 pipe2    2 days 2024-06-18 06:00:00
-## 3 pipe3  4 months 2024-06-20 00:00:00</code></pre>
-<p>A good starting point is to schedule it as often as the highest
-frequency pipeline in the project - so <code>1 hour</code> in the above
-example. If you run it on *:30:00 minute each day, pipe1 will execute
-nearly exactly at the scheduled time and the other pipelines will be
-executed 30 minutes early. If you’re comfortable with this margin of
-error then it’s no big deal, but if not then an orchestrator frequency
-of <code>30 minutes</code> will ensure all pipelines run as scheduled
-exactly.</p>
+<p>For demonstration purposes, I’ll manually set the check time to be 08:00:00 UTC (this is the time maestro will use to compare against the scheduled time). In practice, you almost always want this to be the system time using either <code>Sys.time()</code> or <code>lubridate::now()</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ./orchestrator.R</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(maestro)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">build_schedule</span>()</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>status <span class="ot">&lt;-</span> <span class="fu">run_schedule</span>(</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  schedule,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">orch_frequency =</span> <span class="st">&quot;1 day&quot;</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">check_datetime =</span> <span class="fu">as.POSIXct</span>(<span class="st">&quot;2024-06-20 08:00:00&quot;</span>, <span class="at">tz =</span> <span class="st">&quot;UTC&quot;</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div class="asciicast" style="color: #172431;font-family: &#39;Fira Code&#39;,Monaco,Consolas,Menlo,&#39;Bitstream Vera Sans Mono&#39;,&#39;Powerline Symbols&#39;,monospace;line-height: 1.300000">
+<pre><span style="color: #2AA198;">ℹ</span> 1 script successfully parsed                                                  
+                                                                                
+── [2025-01-07 09:06:01]                                                        
+Running pipelines <span style="color: #859900;">▶</span>                                                             
+<span style="color: #859900;">✔</span> <span style="color: #268BD2;">daily_example</span> <span style="color: #b8b8b8;">[17ms]</span>                                                          
+                                                                                
+── [2025-01-07 09:06:01]                                                        
+Pipeline execution completed <span style="color: #525252;">■</span> | 0.029 sec elapsed                              
+<span style="color: #859900;">✔</span> 1 success | <span style="color: #073642;">→</span> 0 skipped | <span style="color: #D33682;">!</span> 0 warnings | <span style="color: #DC322F;">✖</span> 0 errors | <span style="color: #2AA198;">◼</span> 1 total               
+────────────────────────────────────────────────────────────────────────────────
+                                                                                
+── Next scheduled pipelines <span style="color: #2AA198;">❯</span>                                                   
+Pipe name | Next scheduled run                                                  
+• daily_example | 2024-06-21                                                    
+</pre>
+</div>
+</div>
+<p>We can see that the pipeline executed even though the current time was not 09:20:00. This is because we set the orchestrator to run daily and so it considers it close enough to within a day.</p>
+<p>Let’s see what happens if we up the frequency of the orchestrator:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ./orchestrator.R</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>status <span class="ot">&lt;-</span> <span class="fu">run_schedule</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  schedule,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">orch_frequency =</span> <span class="st">&quot;15 minutes&quot;</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">check_datetime =</span> <span class="fu">as.POSIXct</span>(<span class="st">&quot;2024-06-20 08:00:00&quot;</span>, <span class="at">tz =</span> <span class="st">&quot;UTC&quot;</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div class="asciicast" style="color: #172431;font-family: &#39;Fira Code&#39;,Monaco,Consolas,Menlo,&#39;Bitstream Vera Sans Mono&#39;,&#39;Powerline Symbols&#39;,monospace;line-height: 1.300000">
+<pre>                                                                                
+── [2025-01-07 09:06:02]                                                        
+Running pipelines <span style="color: #859900;">▶</span>                                                             
+                                                                                
+── [2025-01-07 09:06:02]                                                        
+Pipeline execution completed <span style="color: #525252;">■</span> | 0 sec elapsed                                  
+<span style="color: #859900;">✔</span> 1 success | <span style="color: #073642;">→</span> 0 skipped | <span style="color: #D33682;">!</span> 0 warnings | <span style="color: #DC322F;">✖</span> 0 errors | <span style="color: #2AA198;">◼</span> 1 total               
+────────────────────────────────────────────────────────────────────────────────
+                                                                                
+── Next scheduled pipelines <span style="color: #2AA198;">❯</span>                                                   
+Pipe name | Next scheduled run                                                  
+• daily_example | 2024-06-20 09:15:00                                           
+</pre>
+</div>
+</div>
+<p>It was skipped because it wasn’t within a 15 minute degree of difference but the output tells us that will next run at <code>2024-06-20 09:15:00</code>.<br>
+<br>
+The takeaway message is that the timeliness of the pipeline depends on how frequently the orchestrator runs. Remember that when you declare the <code>orch_frequency = &quot;15 minutes&quot;</code> that is essentially a contract stating that you <em>will</em> run it every 15 minutes - maestro does not do this for you. If you run the orchestrator more or less frequently than you said you would unexpected things will happen. Specifically, if you run it more frequently than stated, your pipelines will run more often than expected, likewise less frequently than stated means that pipelines won’t run as often.</p>
+<h2 id="how-often-should-i-schedule-my-orchestrator"><em>How often should I schedule my orchestrator?</em></h2>
+<p>If you have a single pipeline or even multiple pipelines that all run at the same time this is an easy question to answer. In practice (and in our experience using maestro in production) you have multiple pipelines that run at different intervals and different times. Maybe some run hourly, some run daily, and others run monthly.</p>
+<h3 id="example-1">Example 1</h3>
+<p>Let’s say we have three pipelines with the following frequencies and start times:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>   name frequency          start_time
+1 pipe1    1 hour 2024-06-18 12:30:00
+2 pipe2    2 days 2024-06-18 06:00:00
+3 pipe3  4 months 2024-06-20 00:00:00</code></pre>
+</div>
+</div>
+<p>A good starting point is to schedule it as often as the highest frequency pipeline in the project - so <code>1 hour</code> in the above example. If you run it on *:30:00 minute each day, pipe1 will execute nearly exactly at the scheduled time and the other pipelines will be executed 30 minutes early. If you’re comfortable with this margin of error then it’s no big deal, but if not then an orchestrator frequency of <code>30 minutes</code> will ensure all pipelines run as scheduled exactly.</p>
 <p>Let’s see another example:</p>
-</div>
-<div id="example-2" class="section level3">
-<h3>Example 2</h3>
-<pre><code>##    name frequency          start_time
-## 1 pipe4    1 hour 2024-06-18 00:00:00
-## 2 pipe5    1 hour 2024-06-18 00:10:00
-## 3 pipe6    1 hour 2024-06-18 00:20:00</code></pre>
-<p>All three pipelines are hourly but they start on different 10-minute
-intervals. If we run the orchestrator at <code>1 hour</code> they’ll all
-execute at the same time. If it is important that the execute at
-different times, we should set it to <code>10 minutes</code>.</p>
-<p>So a good heuristic is to run it as often as the smallest interval of
-time difference between any pipeline. This is pretty good so long as we
-don’t run it so often that the pipelines can’t complete before the next
-execution time. We don’t recommend running the orchestrator more
-frequently than every 5 minutes unless you’re confident that your
-pipelines are fast to execute.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
-<p>Maestro has a function for determining the ideal orchestrator
-frequency based on the pipeline frequencies in the project called
-<code>suggest_orch_frequency()</code>. It looks for the shortest
-interval of time between any future pipeline executions and suggests
-that for the frequency.</p>
+<h3 id="example-2">Example 2</h3>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>   name frequency          start_time
+1 pipe4    1 hour 2024-06-18 00:00:00
+2 pipe5    1 hour 2024-06-18 00:10:00
+3 pipe6    1 hour 2024-06-18 00:20:00</code></pre>
 </div>
 </div>
-<div id="irregular-schedules" class="section level2">
-<h2>Irregular Schedules</h2>
-<p>It is also possible to run pipelines on an irregular schedule by
-specifying hours, days of week, days of month, or months of the
-year:</p>
-<div id="hours-of-the-day" class="section level3">
-<h3>Hours of the day</h3>
-<p>If your pipeline runs hourly at a minimum, you can run it on specific
-hours. This could be useful, for example, if you have pipelines you only
-want to run during business hours. Use the <code>maestroHours</code> tag
-with integers corresponding to hours [0-23] separated by white space. Be
-sure to use the corresponding <code>maestroFrequency</code>.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="co">#&#39; specific_hours maestro pipeline</span></span>
-<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a><span class="co">#&#39;</span></span>
-<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency hourly</span></span>
-<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a><span class="co">#&#39; @maestroHours 6 9 12 15 18</span></span>
-<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a>some_hours_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a></span>
-<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
-<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a>}</span></code></pre></div>
+<p>All three pipelines are hourly but they start on different 10-minute intervals. If we run the orchestrator at <code>1 hour</code> they’ll all execute at the same time. If it is important that the execute at different times, we should set it to <code>10 minutes</code>.</p>
+<p>So a good heuristic is to run it as often as the smallest interval of time difference between any pipeline. This is pretty good so long as we don’t run it so often that the pipelines can’t complete before the next execution time. We don’t recommend running the orchestrator more frequently than every 5 minutes unless you’re confident that your pipelines are fast to execute.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>Maestro has a function for determining the ideal orchestrator frequency based on the pipeline frequencies in the project called <code>suggest_orch_frequency()</code>. It looks for the shortest interval of time between any future pipeline executions and suggests that for the frequency.</p>
+<h2 id="irregular-schedules">Irregular Schedules</h2>
+<p>It is also possible to run pipelines on an irregular schedule by specifying hours, days of week, days of month, or months of the year:</p>
+<h3 id="hours-of-the-day">Hours of the day</h3>
+<p>If your pipeline runs hourly at a minimum, you can run it on specific hours. This could be useful, for example, if you have pipelines you only want to run during business hours. Use the <code>maestroHours</code> tag with integers corresponding to hours [0-23] separated by white space. Be sure to use the corresponding <code>maestroFrequency</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; specific_hours maestro pipeline</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency hourly</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroHours 6 9 12 15 18</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>some_hours_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 </div>
-<div id="days-of-weekdays-of-month" class="section level3">
-<h3>Days of week/days of month</h3>
-<p>If your pipeline runs at least daily, you can run it on specific days
-of week or days of month. If doing days of week use strings like Mon,
-Tue, Wed, etc. If using days of month use integers [1-31]. You cannot
-specify both days of week and days of month.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="co">#&#39; specific_days_of_week maestro pipeline</span></span>
-<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="co">#&#39;</span></span>
-<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency daily</span></span>
-<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="co">#&#39; @maestroDays Mon Tue Wed Thu Fri</span></span>
-<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>some_dow_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a></span>
-<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
-<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a>}</span>
-<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a></span>
-<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a><span class="co">#&#39; specific_days_of_week maestro pipeline</span></span>
-<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a><span class="co">#&#39;</span></span>
-<span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency daily</span></span>
-<span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a><span class="co">#&#39; @maestroDays 1 14 28</span></span>
-<span id="cb20-14"><a href="#cb20-14" tabindex="-1"></a>some_dom_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb20-15"><a href="#cb20-15" tabindex="-1"></a></span>
-<span id="cb20-16"><a href="#cb20-16" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
-<span id="cb20-17"><a href="#cb20-17" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="days-of-weekdays-of-month">Days of week/days of month</h3>
+<p>If your pipeline runs at least daily, you can run it on specific days of week or days of month. If doing days of week use strings like Mon, Tue, Wed, etc. If using days of month use integers [1-31]. You cannot specify both days of week and days of month.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; specific_days_of_week maestro pipeline</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency daily</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroDays Mon Tue Wed Thu Fri</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>some_dow_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; specific_days_of_week maestro pipeline</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39;</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency daily</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroDays 1 14 28</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>some_dom_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 </div>
-<div id="months-of-year" class="section level3">
-<h3>Months of year</h3>
-<p>If your pipeline runs at least monthly, you can run it on specific
-months. Use integers [1-12] to specify the months.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="co">#&#39; specific_months maestro pipeline</span></span>
-<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a><span class="co">#&#39;</span></span>
-<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency months</span></span>
-<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="co">#&#39; @maestroMonths 1 7 10</span></span>
-<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>some_months <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a></span>
-<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
-<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a>}</span></code></pre></div>
-<p>Note that you can use combinations of these specifiers depending on
-the minimum frequency of the pipeline. For example, an hourly pipeline
-can run on specific hours and days. If you wanted a pipeline to only run
-on business hours including not on weekends. It could look like
-this:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="co">#&#39; business_hours maestro pipeline</span></span>
-<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a><span class="co">#&#39;</span></span>
-<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency hourly</span></span>
-<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a><span class="co">#&#39; @maestroHours 9 10 11 12 13 14 15 16 17</span></span>
-<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a><span class="co">#&#39; @maestroDays Mon Tue Wed Thu Fri</span></span>
-<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a>during_work_hours_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a></span>
-<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
-<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="months-of-year">Months of year</h3>
+<p>If your pipeline runs at least monthly, you can run it on specific months. Use integers [1-12] to specify the months.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; specific_months maestro pipeline</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency months</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroMonths 1 7 10</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>some_months <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 </div>
+<p>Note that you can use combinations of these specifiers depending on the minimum frequency of the pipeline. For example, an hourly pipeline can run on specific hours and days. If you wanted a pipeline to only run on business hours including not on weekends. It could look like this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; business_hours maestro pipeline</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency hourly</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroHours 9 10 11 12 13 14 15 16 17</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroDays Mon Tue Wed Thu Fri</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>during_work_hours_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 </div>
-<div id="final-remarks" class="section level2">
-<h2>Final Remarks</h2>
-<p>When it comes time to deploy your project make sure that whatever you
-use to actually run your project (e.g., cron, TaskScheduler, Google
-Cloud Scheduler, etc.) is indeed running it at the same frequency as you
-have in the orchestrator. It’s best to stick to using whole units of
-time rather than fractional units - if my orchestrator runs every 15
-minutes I like to have it run on the 00:00, 15:00, 30:00, and 45:00
-minutes. It makes reasoning about the scheduling simpler.</p>
-</div>
-<div class="footnotes footnotes-end-of-document">
-<hr />
+<h2 id="final-remarks">Final Remarks</h2>
+<p>When it comes time to deploy your project make sure that whatever you use to actually run your project (e.g., cron, TaskScheduler, Google Cloud Scheduler, etc.) is indeed running it at the same frequency as you have in the orchestrator. It’s best to stick to using whole units of time rather than fractional units - if my orchestrator runs every 15 minutes I like to have it run on the 00:00, 15:00, 30:00, and 45:00 minutes. It makes reasoning about the scheduling simpler.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
 <ol>
-<li id="fn1"><p>Make sure you consider the amount of time it takes to
-execute <code>build_schedule()</code> and that you account for the
-additional work done in <code>run_schedule()</code> not related to your
-actual pipeline logic.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn1"><p>Make sure you consider the amount of time it takes to execute <code>build_schedule()</code> and that you account for the additional work done in <code>run_schedule()</code> not related to your actual pipeline logic.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
-</div>
+</section>
 
 
 
-<!-- code folding -->
 
 
-<!-- dynamically load mathjax for compatibility with self-contained -->
-<script>
-  (function () {
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
-    document.getElementsByTagName("head")[0].appendChild(script);
-  })();
-</script>
-
-</body>
-</html>
+</body></html>

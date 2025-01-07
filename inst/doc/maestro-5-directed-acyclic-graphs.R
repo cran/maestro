@@ -1,3 +1,23 @@
+## ----echo=FALSE---------------------------------------------------------------
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "",
+  out.width = "100%",
+  cache = FALSE,
+  asciicast_knitr_output = "html"
+)
+
+asciicast::init_knitr_engine(
+  echo = TRUE,
+  echo_input = FALSE,
+  same_process = TRUE,
+  startup = quote({
+    library(maestro)
+    set.seed(1) 
+  })
+)
+options(asciicast_theme = "pkgdown")
+
 ## ----echo=FALSE, warning=FALSE, message=FALSE---------------------------------
 dir.create("pipelines")
 writeLines(
@@ -36,21 +56,6 @@ writeLines(
 #   tolower(.input)
 # }
 
-## -----------------------------------------------------------------------------
-# ./orchestrator.R
-
-library(maestro)
-
-schedule <- build_schedule(quiet = TRUE)
-
-status <- run_schedule(
-  schedule,
-  run_all = TRUE
-)
-
-## -----------------------------------------------------------------------------
-get_artifacts(schedule)
-
 ## ----eval=FALSE---------------------------------------------------------------
 # #' Example ETL pipeline
 # #' @maestroFrequency 1 day
@@ -71,7 +76,7 @@ get_artifacts(schedule)
 #   write.csv(transformed, file = paste0("transformed_mtcars_", Sys.Date(), ".csv"))
 # }
 
-## ----echo=FALSE, warning=FALSE, message=FALSE, results='hide'-----------------
+## ----echo=FALSE, warning=FALSE, message=FALSE---------------------------------
 file.remove("pipelines/dags.R")
 dir.create("pipelines")
 writeLines(
@@ -117,15 +122,11 @@ writeLines(
 #   write.csv(.input, file = paste0("transformed_mtcars.csv"))
 # }
 
-## -----------------------------------------------------------------------------
+## ----echo=FALSE, warning=FALSE, message=FALSE---------------------------------
+library(maestro)
+
 schedule <- build_schedule(quiet = TRUE)
 
-status <- run_schedule(
-  schedule,
-  run_all = TRUE
-)
-
-## -----------------------------------------------------------------------------
 show_network(schedule)
 
 ## ----cleanup, echo=FALSE, message=FALSE, warning=FALSE------------------------

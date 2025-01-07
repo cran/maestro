@@ -460,6 +460,23 @@ we’ll use a regular R script. Here is where you’ll run
 <span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  schedule,</span>
 <span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  <span class="at">orch_frequency =</span> <span class="st">&quot;1 hour&quot;</span></span>
 <span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>)</span></code></pre></div>
+<div class="asciicast" style="color: #172431;font-family: &#39;Fira Code&#39;,Monaco,Consolas,Menlo,&#39;Bitstream Vera Sans Mono&#39;,&#39;Powerline Symbols&#39;,monospace;line-height: 1.300000">
+<pre>
+<span style="color: #2AA198;">ℹ</span> 1 script successfully parsed                                                  
+                                                                                
+── [2025-01-07 09:05:54]                                                        
+Running pipelines <span style="color: #859900;">▶</span>                                                             
+                                                                                
+── [2025-01-07 09:05:54]                                                        
+Pipeline execution completed <span style="color: #525252;">■</span> | 0.008 sec elapsed                              
+<span style="color: #859900;">✔</span> 0 successes | <span style="color: #073642;">→</span> 1 skipped | <span style="color: #D33682;">!</span> 0 warnings | <span style="color: #DC322F;">✖</span> 0 errors | <span style="color: #2AA198;">◼</span> 1 total             
+────────────────────────────────────────────────────────────────────────────────
+                                                                                
+── Next scheduled pipelines <span style="color: #2AA198;">❯</span>                                                   
+Pipe name | Next scheduled run                                                  
+• my_pipe | 2025-01-08                                                          
+</pre>
+</div>
 <p>Building the schedule gets <code>maestro</code> to look through the
 pipelines in the pipelines folder and creates a schedule object. Then,
 you pass that to <code>run_schedule()</code> along with how often the

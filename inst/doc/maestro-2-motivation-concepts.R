@@ -4,7 +4,6 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
-## ----setup, echo = FALSE------------------------------------------------------
 
 ## ----eval=FALSE---------------------------------------------------------------
 # #' my_pipe maestro pipeline
@@ -21,6 +20,7 @@ knitr::opts_chunk$set(
 # 
 #   write.csv(random_data, file = tempfile())
 # }
+
 
 ## ----eval=FALSE---------------------------------------------------------------
 # library(maestro)
