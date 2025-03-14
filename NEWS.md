@@ -1,3 +1,21 @@
+# maestro 0.5.2
+
+### Minor changes
+
+- Pipeline schedule sequences are now stored internally inside of `<MaestroPipeline>` objects instead of generated during `run_schedule()`. This has implications when caching a schedule as the sequence only goes out 3 years in advance.
+
+- Performance improvements to `run_schedule()`.
+
+### Bug fixes
+
+- Specifying `maestroHours`, `maestroDays`, `maestroMonths` now correctly adopts the time zone specified in `maestroTz` (#141).
+
+- When using non UTC time zones, the presence of Daylight Savings Time in the `maestroStartTime` is used to adjust the sequence so that invocations occur on the same time interval.
+
+- Other time zone fixes to deal with differing `maestroTz` and system time checks.
+
+- `maestroHours`, was only valid when `maestroFrequency` was specified as 'hourly', but now '1 hour' is also acceptable (same applies for other specifier tags).
+
 # maestro 0.5.1
 
 ### Bug fixes
