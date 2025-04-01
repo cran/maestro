@@ -1,8 +1,8 @@
-e2a03a7192c5fcdb929204824d7c42e7 *DESCRIPTION
+f102a60d0478b40a9d28964b011db9cf *DESCRIPTION
 6b94dc6de511c6d1f59ad46c7467b926 *LICENSE
 6b786b46e61d582a3d67add89eb7c6de *NAMESPACE
-0cca22286d0acc71bfe6759a8b8b9a7a *NEWS.md
-65fdf757c9222fa9a0ef6e20849b7e95 *R/MaestroPipeline.R
+cce7c740d813e97089ea87f8dbac6ca7 *NEWS.md
+0738263c20db292714fcb63394715c7d *R/MaestroPipeline.R
 53da4812455fa1eb3489e234b717c269 *R/MaestroPipelineList.R
 31c8f614f7fa33d0e1b0cfbb57689a7e *R/MaestroSchedule.R
 11ae64e07fcb6c433cd4e6f5f95e9774 *R/build_schedule.R
@@ -29,7 +29,7 @@ ea8f2ae80e3120253b3ef6ef9e0fdef4 *build/vignette.rds
 62456d2527e2ccbad9c4b64803a64e19 *data/maestro_tags.rda
 f6c56aa6f73f6a4a3a50f883fae3b118 *inst/doc/maestro-1-quick-start.R
 2f3c0840d59b31568126359d65ddddd3 *inst/doc/maestro-1-quick-start.Rmd
-05830a1225b3ede2014ec99b26318cb7 *inst/doc/maestro-1-quick-start.html
+21400901165de6d6ece31399c304f6b4 *inst/doc/maestro-1-quick-start.html
 b3ce07cb85958e2497fba9e31cab21e5 *inst/doc/maestro-2-motivation-concepts.R
 79b40e13863e939a38bd2d81ffb7b5f7 *inst/doc/maestro-2-motivation-concepts.html
 3a652aadbf805226e9dbb927e9deaffe *inst/doc/maestro-2-motivation-concepts.qmd
@@ -37,13 +37,13 @@ b3ce07cb85958e2497fba9e31cab21e5 *inst/doc/maestro-2-motivation-concepts.R
 a52409be3f94c33b8561750fc6190f6b *inst/doc/maestro-3-use-cases.html
 576b265c20b976767d352e6bd88b2408 *inst/doc/maestro-3-use-cases.qmd
 123ba9929ddb82599ed3f0c6270df36e *inst/doc/maestro-4-advanced-scheduling.R
-06f62373c51b66324d7ab8aa9620e6a1 *inst/doc/maestro-4-advanced-scheduling.html
+a1e9d67993911b05e0a8f051559c15a5 *inst/doc/maestro-4-advanced-scheduling.html
 7095f2dffa0fc5a9e95d6f8ad607890e *inst/doc/maestro-4-advanced-scheduling.qmd
 494236a9c535fa5437bd2172be9c120e *inst/doc/maestro-5-directed-acyclic-graphs.R
 6718b53e98969107c40fbc7a3b7188e9 *inst/doc/maestro-5-directed-acyclic-graphs.Rmd
-8c1d2824af21a285738eec3607a1a0e3 *inst/doc/maestro-5-directed-acyclic-graphs.html
+22aee2142acf81b3466973934580f103 *inst/doc/maestro-5-directed-acyclic-graphs.html
 98ab01c861aa6377e8ae440f2fde1191 *inst/doc/maestro-6-logging.R
-637577339caf280aa7f3d74c1ad73d1d *inst/doc/maestro-6-logging.html
+b6c51f49a36ee9add734378f888744a1 *inst/doc/maestro-6-logging.html
 b5ab592e4c5bfb6f6835d41971633475 *inst/doc/maestro-6-logging.qmd
 678cb205987490f828029366248679ea *inst/doc/maestro-7-deployment.R
 26623bd74a9c9ee5ae4f88370c68ba25 *inst/doc/maestro-7-deployment.html
@@ -188,3 +188,4 @@ e3f3663fbafa3a99e2c2bbc8dfe03a13 *tests/testthat/test_pipelines_run_two_warnings
 6718b53e98969107c40fbc7a3b7188e9 *vignettes/maestro-5-directed-acyclic-graphs.Rmd
 b5ab592e4c5bfb6f6835d41971633475 *vignettes/maestro-6-logging.qmd
 fc9d46167c9b97f097af9103ac0b51ed *vignettes/maestro-7-deployment.qmd
+83ab2b24c28044053678f1f6c545c39b *vignettes/maestro-8-tag-reference.html
