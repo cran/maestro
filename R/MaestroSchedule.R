@@ -23,7 +23,13 @@ MaestroSchedule <- R6::R6Class(
       Pipelines = NULL
     ) {
       self$PipelineList <- MaestroPipelineList$new()
-      for (pipeline in Pipelines) {
+      pipeline_list <- purrr::map(Pipelines, ~.x$MaestroPipelines) |>
+        purrr::list_flatten()
+      priorities <- purrr::map(pipeline_list, ~.x$get_priority()) |>
+        purrr::list_c()
+      if (length(priorities) == 0) priorities <- list()
+      pipeline_list <- pipeline_list[order(priorities)]
+      for (pipeline in pipeline_list) {
         self$PipelineList$add_pipelines(pipeline)
       }
     },
@@ -183,6 +189,20 @@ MaestroSchedule <- R6::R6Class(
     #' @return data.frame
     get_network = function() {
       self$PipelineList$get_network()
+    },
+
+    #' @description
+    #' Get all pipeline flags as a long data.frame
+    #' @return data.frame
+    get_flags = function() {
+      flag_list <- self$PipelineList$get_flags()
+      purrr::imap(flag_list, ~{
+        dplyr::tibble(
+          pipe_name = .y,
+          flag = .x
+        )
+      }) |>
+        purrr::list_rbind()
     },
 
     #' @description

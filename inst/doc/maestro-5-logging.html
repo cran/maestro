@@ -137,14 +137,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; }
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 <div class="asciicast" style="color: #172431;font-family: &#39;Fira Code&#39;,Monaco,Consolas,Menlo,&#39;Bitstream Vera Sans Mono&#39;,&#39;Powerline Symbols&#39;,monospace;line-height: 1.300000">
 <pre>                                                                                
-── [2025-04-01 08:41:29]                                                        
+── [2025-05-13 14:53:45]                                                        
 Running pipelines <span style="color: #859900;">▶</span>                                                             
-<span style="color: #859900;">✔</span> <span style="color: #268BD2;">hello</span> <span style="color: #b8b8b8;">[8ms]</span>                                                                   
-<span style="color: #859900;">✔</span> <span style="color: #268BD2;">uhh</span> <span style="color: #b8b8b8;">[20ms]</span>                                                                    
-<span style="color: #DC322F;">✖</span> <span style="color: #268BD2;">oh_no</span> <span style="color: #b8b8b8;">[44ms]</span>                                                                  
+<span style="color: #859900;">✔</span> <span style="color: #268BD2;">hello</span> <span style="color: #b8b8b8;">[10ms]</span>                                                                  
+<span style="color: #859900;">✔</span> <span style="color: #268BD2;">uhh</span> <span style="color: #b8b8b8;">[53ms]</span>                                                                    
+<span style="color: #DC322F;">✖</span> <span style="color: #268BD2;">oh_no</span> <span style="color: #b8b8b8;">[12ms]</span>                                                                  
                                                                                 
-── [2025-04-01 08:41:29]                                                        
-Pipeline execution completed <span style="color: #525252;">■</span> | 0.092 sec elapsed                              
+── [2025-05-13 14:53:45]                                                        
+Pipeline execution completed <span style="color: #525252;">■</span> | 0.093 sec elapsed                              
 <span style="color: #859900;">✔</span> 2 successes | <span style="color: #073642;">→</span> 0 skipped | <span style="color: #D33682;">!</span> 1 warning | <span style="color: #DC322F;">✖</span> 1 error | <span style="color: #2AA198;">◼</span> 3 total               
 <span style="color: #DC322F;">✖</span> Use `last_run_errors()` to show pipeline errors.                              
 <span style="color: #B58900;">!</span> Use `last_run_warnings()` to show pipeline warnings.                          
@@ -156,9 +156,9 @@ Pipeline execution completed <span style="color: #525252;">■</span> | 0.092 se
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">readLines</span>(<span class="st">&quot;maestro.log&quot;</span>)</span></code></pre></div>
 <div class="asciicast" style="color: #172431;font-family: &#39;Fira Code&#39;,Monaco,Consolas,Menlo,&#39;Bitstream Vera Sans Mono&#39;,&#39;Powerline Symbols&#39;,monospace;line-height: 1.300000">
-<pre>[1] &quot;[hello] [INFO] [2025-04-01 08:41:29.481199]: hello&quot;                        
-[2] &quot;[uhh] [WARN] [2025-04-01 08:41:29.500646]: this could be a problem&quot;        
-[3] &quot;[oh_no] [ERROR] [2025-04-01 08:41:29.52041]: this is bad&quot;                  
+<pre>[1] &quot;[hello] [INFO] [2025-05-13 14:53:45.869501]: hello&quot;                        
+[2] &quot;[uhh] [WARN] [2025-05-13 14:53:45.889324]: this could be a problem&quot;        
+[3] &quot;[oh_no] [ERROR] [2025-05-13 14:53:45.942466]: this is bad&quot;                 
 </pre>
 </div>
 </div>
@@ -175,17 +175,17 @@ Pipeline execution completed <span style="color: #525252;">■</span> | 0.092 se
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 <div class="asciicast" style="color: #172431;font-family: &#39;Fira Code&#39;,Monaco,Consolas,Menlo,&#39;Bitstream Vera Sans Mono&#39;,&#39;Powerline Symbols&#39;,monospace;line-height: 1.300000">
 <pre>                                                                                
-── [2025-04-01 08:41:29]                                                        
+── [2025-05-13 14:53:46]                                                        
 Running pipelines <span style="color: #859900;">▶</span>                                                             
-[hello] [INFO] [2025-04-01 08:41:29.693548]: hello                              
+[hello] [INFO] [2025-05-13 14:53:46.084354]: hello                              
 <span style="color: #859900;">✔</span> <span style="color: #268BD2;">hello</span> <span style="color: #b8b8b8;">[5ms]</span>                                                                   
-[uhh] [WARN] [2025-04-01 08:41:29.701778]: this could be a problem              
+[uhh] [WARN] [2025-05-13 14:53:46.092926]: this could be a problem              
 <span style="color: #859900;">✔</span> <span style="color: #268BD2;">uhh</span> <span style="color: #b8b8b8;">[13ms]</span>                                                                    
-[oh_no] [ERROR] [2025-04-01 08:41:29.717471]: this is bad                       
-<span style="color: #DC322F;">✖</span> <span style="color: #268BD2;">oh_no</span> <span style="color: #b8b8b8;">[10ms]</span>                                                                  
+[oh_no] [ERROR] [2025-05-13 14:53:46.108599]: this is bad                       
+<span style="color: #DC322F;">✖</span> <span style="color: #268BD2;">oh_no</span> <span style="color: #b8b8b8;">[11ms]</span>                                                                  
                                                                                 
-── [2025-04-01 08:41:29]                                                        
-Pipeline execution completed <span style="color: #525252;">■</span> | 0.037 sec elapsed                              
+── [2025-05-13 14:53:46]                                                        
+Pipeline execution completed <span style="color: #525252;">■</span> | 0.038 sec elapsed                              
 <span style="color: #859900;">✔</span> 2 successes | <span style="color: #073642;">→</span> 0 skipped | <span style="color: #D33682;">!</span> 1 warning | <span style="color: #DC322F;">✖</span> 1 error | <span style="color: #2AA198;">◼</span> 3 total               
 <span style="color: #DC322F;">✖</span> Use `last_run_errors()` to show pipeline errors.                              
 <span style="color: #B58900;">!</span> Use `last_run_warnings()` to show pipeline warnings.                          
@@ -228,14 +228,14 @@ Pipeline execution completed <span style="color: #525252;">■</span> | 0.037 se
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 <div class="asciicast" style="color: #172431;font-family: &#39;Fira Code&#39;,Monaco,Consolas,Menlo,&#39;Bitstream Vera Sans Mono&#39;,&#39;Powerline Symbols&#39;,monospace;line-height: 1.300000">
 <pre>                                                                                
-── [2025-04-01 08:41:29]                                                        
+── [2025-05-13 14:53:46]                                                        
 Running pipelines <span style="color: #859900;">▶</span>                                                             
 <span style="color: #859900;">✔</span> <span style="color: #268BD2;">hello</span> <span style="color: #b8b8b8;">[4ms]</span>                                                                   
 <span style="color: #859900;">✔</span> <span style="color: #268BD2;">uhh</span> <span style="color: #b8b8b8;">[4ms]</span>                                                                     
-[oh_no] [ERROR] [2025-04-01 08:41:29.855154]: this is bad                       
-<span style="color: #DC322F;">✖</span> <span style="color: #268BD2;">oh_no</span> <span style="color: #b8b8b8;">[5ms]</span>                                                                   
+[oh_no] [ERROR] [2025-05-13 14:53:46.23659]: this is bad                        
+<span style="color: #DC322F;">✖</span> <span style="color: #268BD2;">oh_no</span> <span style="color: #b8b8b8;">[7ms]</span>                                                                   
                                                                                 
-── [2025-04-01 08:41:29]                                                        
+── [2025-05-13 14:53:46]                                                        
 Pipeline execution completed <span style="color: #525252;">■</span> | 0.024 sec elapsed                              
 <span style="color: #859900;">✔</span> 2 successes | <span style="color: #073642;">→</span> 0 skipped | <span style="color: #D33682;">!</span> 1 warning | <span style="color: #DC322F;">✖</span> 1 error | <span style="color: #2AA198;">◼</span> 3 total               
 <span style="color: #DC322F;">✖</span> Use `last_run_errors()` to show pipeline errors.                              
@@ -275,17 +275,17 @@ Pipeline execution completed <span style="color: #525252;">■</span> | 0.024 se
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 <div class="asciicast" style="color: #172431;font-family: &#39;Fira Code&#39;,Monaco,Consolas,Menlo,&#39;Bitstream Vera Sans Mono&#39;,&#39;Powerline Symbols&#39;,monospace;line-height: 1.300000">
 <pre>                                                                                
-── [2025-04-01 08:41:29]                                                        
+── [2025-05-13 14:53:46]                                                        
 Running pipelines <span style="color: #859900;">▶</span>                                                             
-[hello] [INFO] [2025-04-01 08:41:29.959938]: hi                                 
+[hello] [INFO] [2025-05-13 14:53:46.332785]: hi                                 
 <span style="color: #859900;">✔</span> <span style="color: #268BD2;">hello</span> <span style="color: #b8b8b8;">[5ms]</span>                                                                   
-[uhh] [WARN] [2025-04-01 08:41:29.967854]: this could be a problem              
-<span style="color: #859900;">✔</span> <span style="color: #268BD2;">uhh</span> <span style="color: #b8b8b8;">[13ms]</span>                                                                    
-[oh_no] [ERROR] [2025-04-01 08:41:29.984359]: this is bad                       
+[uhh] [WARN] [2025-05-13 14:53:46.341094]: this could be a problem              
+<span style="color: #859900;">✔</span> <span style="color: #268BD2;">uhh</span> <span style="color: #b8b8b8;">[10ms]</span>                                                                    
+[oh_no] [ERROR] [2025-05-13 14:53:46.354458]: this is bad                       
 <span style="color: #859900;">✔</span> <span style="color: #268BD2;">oh_no</span> <span style="color: #b8b8b8;">[11ms]</span>                                                                  
                                                                                 
-── [2025-04-01 08:41:29]                                                        
-Pipeline execution completed <span style="color: #525252;">■</span> | 0.039 sec elapsed                              
+── [2025-05-13 14:53:46]                                                        
+Pipeline execution completed <span style="color: #525252;">■</span> | 0.037 sec elapsed                              
 <span style="color: #859900;">✔</span> 3 successes | <span style="color: #073642;">→</span> 0 skipped | <span style="color: #D33682;">!</span> 0 warnings | <span style="color: #DC322F;">✖</span> 0 errors | <span style="color: #2AA198;">◼</span> 3 total             
 ────────────────────────────────────────────────────────────────────────────────
 </pre>

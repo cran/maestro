@@ -37,7 +37,7 @@ MaestroPipelineList <- R6::R6Class(
     #' @return invisible
     add_pipelines = function(MaestroPipelines = NULL) {
       if ("MaestroPipeline" %in% class(MaestroPipelines)) {
-        self$n_pipelines <- self$n_pipelines + length(MaestroPipelines)
+        self$n_pipelines <- self$n_pipelines + 1
         self$MaestroPipelines <- append(self$MaestroPipelines, MaestroPipelines)
       } else {
         purrr::walk(MaestroPipelines$MaestroPipelines, ~{
@@ -48,7 +48,7 @@ MaestroPipelineList <- R6::R6Class(
     },
 
     #' @description
-    #' Get names of the pipelines in the list
+    #' Get names of the pipelines in the list arranged by priority
     #' @return character
     get_pipe_names = function() {
       purrr::map_chr(self$MaestroPipelines, ~.x$get_pipe_name())
@@ -62,9 +62,16 @@ MaestroPipelineList <- R6::R6Class(
       names <- self$get_pipe_names()
       name_idx <- which(names %in% pipe_name)
       if (length(name_idx) == 0) {
-        cli::cli_abort("No pipeline named {pipe_name} in {.cls MaestroPipelineListL}")
+        cli::cli_abort("No pipeline named {pipe_name} in {.cls MaestroPipelineList}")
       }
       self$MaestroPipelines[[name_idx]]
+    },
+
+    #' @description
+    #' Get priorities
+    #' @return numeric
+    get_priorities = function() {
+      purrr::map_dbl(self$MaestroPipelines, ~.x$get_priority())
     },
 
     #' @description
@@ -143,6 +150,23 @@ MaestroPipelineList <- R6::R6Class(
       purrr::map(self$MaestroPipelines, ~.x$get_artifacts()) |>
         stats::setNames(self$get_pipe_names()) |>
         purrr::discard(is.null)
+    },
+
+    #' @description
+    #' Get run sequences from the pipelines
+    #' @return list
+    get_run_sequences = function() {
+      purrr::map(self$MaestroPipelines, ~.x$get_run_sequence()) |>
+        stats::setNames(self$get_pipe_names()) |>
+        purrr::discard(is.null)
+    },
+
+    #' @description
+    #' Get the flags of the pipelines as a named list
+    #' @return list
+    get_flags = function() {
+      purrr::map(self$MaestroPipelines, ~.x$get_flags()) |>
+        stats::setNames(self$get_pipe_names())
     },
 
     #' @description

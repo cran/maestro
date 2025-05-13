@@ -433,23 +433,6 @@ test_that("errors if resources are unnamed or non unique", {
   }, regexp = "All elements")
 })
 
-test_that("deprecation for logging arguments", {
-
-  schedule <- build_schedule(test_path("test_pipelines_run_all_good"), quiet = TRUE)
-  withr::with_tempdir({
-    expect_warning({
-      run_schedule(schedule, orch_frequency = "hourly", logging = TRUE)
-    })
-  })
-
-  withr::with_tempdir({
-    expect_warning({
-      run_schedule(schedule, orch_frequency = "hourly", log_file = "asdas")
-    })
-  })
-}) |>
-  suppressMessages()
-
 test_that("warns if the orch frequency is less than the highest pipe frequency", {
 
   schedule <- build_schedule(test_path("test_pipelines_run_all_good"), quiet = TRUE)
@@ -472,4 +455,64 @@ test_that("errors if orch_frequency is less than 1 year", {
       orch_frequency = "2 years"
     )
   }, regexp = "Invalid `orch_frequency`")
+})
+
+test_that("maestroStartTime with HH:MM:SS runs on the expected time", {
+  withr::with_tempdir({
+    dir.create("pipelines")
+    writeLines(
+      "
+      #' @maestroFrequency 1 day
+      #' @maestroStartTime 10:00:00
+      hhmmss <- function() {
+
+      }
+      ",
+      con = "pipelines/hhmmss.R"
+    )
+
+    schedule <- build_schedule(quiet = TRUE)
+    run_schedule(
+      schedule,
+      orch_frequency = "1 hour",
+      check_datetime = as.POSIXct(glue::glue("{lubridate::today()} 10:00:00"), tz = "UTC"),
+      quiet = TRUE
+    )
+    status <- get_status(schedule)
+  })
+
+  expect_snapshot(status$invoked)
+})
+
+test_that("maestroPriority works as expected", {
+  withr::with_tempdir({
+    dir.create("pipelines")
+    writeLines(
+      "
+      #' @maestroFrequency 1 day
+      #' @maestroStartTime 10:00:00
+      p2 <- function() {
+      }
+
+      #' @maestroFrequency 1 day
+      #' @maestroStartTime 10:00:00
+      #' @maestroPriority 1
+      q1 <- function() {
+        Sys.sleep(1)
+      }
+      ",
+      con = "pipelines/priorities.R"
+    )
+
+    schedule <- build_schedule(quiet = TRUE)
+    run_schedule(
+      schedule,
+      orch_frequency = "1 hour",
+      check_datetime = as.POSIXct("2025-03-17 10:00:00", tz = "UTC"),
+      quiet = TRUE
+    )
+    status <- get_status(schedule)
+  })
+
+  expect_snapshot(status$pipe_name)
 })

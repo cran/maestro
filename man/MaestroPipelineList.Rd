@@ -32,6 +32,7 @@ single script
 \item \href{#method-MaestroPipelineList-add_pipelines}{\code{MaestroPipelineList$add_pipelines()}}
 \item \href{#method-MaestroPipelineList-get_pipe_names}{\code{MaestroPipelineList$get_pipe_names()}}
 \item \href{#method-MaestroPipelineList-get_pipe_by_name}{\code{MaestroPipelineList$get_pipe_by_name()}}
+\item \href{#method-MaestroPipelineList-get_priorities}{\code{MaestroPipelineList$get_priorities()}}
 \item \href{#method-MaestroPipelineList-get_schedule}{\code{MaestroPipelineList$get_schedule()}}
 \item \href{#method-MaestroPipelineList-get_timely_pipelines}{\code{MaestroPipelineList$get_timely_pipelines()}}
 \item \href{#method-MaestroPipelineList-get_primary_pipes}{\code{MaestroPipelineList$get_primary_pipes()}}
@@ -41,6 +42,8 @@ single script
 \item \href{#method-MaestroPipelineList-get_warnings}{\code{MaestroPipelineList$get_warnings()}}
 \item \href{#method-MaestroPipelineList-get_messages}{\code{MaestroPipelineList$get_messages()}}
 \item \href{#method-MaestroPipelineList-get_artifacts}{\code{MaestroPipelineList$get_artifacts()}}
+\item \href{#method-MaestroPipelineList-get_run_sequences}{\code{MaestroPipelineList$get_run_sequences()}}
+\item \href{#method-MaestroPipelineList-get_flags}{\code{MaestroPipelineList$get_flags()}}
 \item \href{#method-MaestroPipelineList-get_network}{\code{MaestroPipelineList$get_network()}}
 \item \href{#method-MaestroPipelineList-validate_network}{\code{MaestroPipelineList$validate_network()}}
 \item \href{#method-MaestroPipelineList-run}{\code{MaestroPipelineList$run()}}
@@ -106,7 +109,7 @@ invisible
 \if{html}{\out{<a id="method-MaestroPipelineList-get_pipe_names"></a>}}
 \if{latex}{\out{\hypertarget{method-MaestroPipelineList-get_pipe_names}{}}}
 \subsection{Method \code{get_pipe_names()}}{
-Get names of the pipelines in the list
+Get names of the pipelines in the list arranged by priority
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MaestroPipelineList$get_pipe_names()}\if{html}{\out{</div>}}
 }
@@ -133,6 +136,19 @@ Get a MaestroPipeline by its name
 }
 \subsection{Returns}{
 MaestroPipeline
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MaestroPipelineList-get_priorities"></a>}}
+\if{latex}{\out{\hypertarget{method-MaestroPipelineList-get_priorities}{}}}
+\subsection{Method \code{get_priorities()}}{
+Get priorities
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MaestroPipelineList$get_priorities()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+numeric
 }
 }
 \if{html}{\out{<hr>}}
@@ -260,6 +276,32 @@ list
 Get artifacts (return values) from the pipelines
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MaestroPipelineList$get_artifacts()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+list
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MaestroPipelineList-get_run_sequences"></a>}}
+\if{latex}{\out{\hypertarget{method-MaestroPipelineList-get_run_sequences}{}}}
+\subsection{Method \code{get_run_sequences()}}{
+Get run sequences from the pipelines
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MaestroPipelineList$get_run_sequences()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+list
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MaestroPipelineList-get_flags"></a>}}
+\if{latex}{\out{\hypertarget{method-MaestroPipelineList-get_flags}{}}}
+\subsection{Method \code{get_flags()}}{
+Get the flags of the pipelines as a named list
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MaestroPipelineList$get_flags()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
