@@ -109,6 +109,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; }
   <li><a href="#maestrostarttime" id="toc-maestrostarttime">maestroStartTime</a></li>
   <li><a href="#maestrotz" id="toc-maestrotz">maestroTz</a></li>
   <li><a href="#maestrologlevel" id="toc-maestrologlevel">maestroLogLevel</a></li>
+  <li><a href="#maestroflags" id="toc-maestroflags">maestroFlags</a></li>
   </ul></li>
   <li><a href="#specifier-tags" id="toc-specifier-tags">Specifier Tags</a>
   <ul>
@@ -177,6 +178,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; }
 <ul>
 <li><p><code>#&#39; @maestroLogLevel ERROR</code></p></li>
 <li><p><code>#&#39; @maestroLogLevel WARN</code></p></li>
+</ul>
+<h2 id="maestroflags">maestroFlags</h2>
+<p>Arbitrary labeling tags which are then made accessible via <code>get_flags()</code>. A pipeline can have multiple tags separated by spaces.</p>
+<p>Default:</p>
+<p>Examples</p>
+<ul>
+<li><p><code>#&#39; @maestroFlags critical aviation</code></p></li>
+<li><p><code>#&#39; @maestroFlags time-series</code></p></li>
 </ul>
 <hr>
 <h1 id="specifier-tags">Specifier Tags</h1>

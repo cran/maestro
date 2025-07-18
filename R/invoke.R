@@ -4,7 +4,8 @@
 #' purposes or if you want to just run something one-off.
 #'
 #' Scheduling parameters such as the frequency, start time, and specifiers are ignored.
-#' The pipeline will be run even if `maestroSkip` is present.
+#' The pipeline will be run even if `maestroSkip` is present. If the pipeline is a DAG
+#' pipeline, `invoke` will attempt to execute the full DAG.
 #'
 #' @inheritParams run_schedule
 #' @param pipe_name name of a single pipe name from the schedule
@@ -68,8 +69,25 @@ invoke <- function(schedule, pipe_name, resources = list(), ...) {
     }
   }
 
-  pipeline_idx <- which(pipe_names == pipe_name)
-  pipeline_to_run <- schedule$PipelineList$MaestroPipelines[[pipeline_idx]]
+  tryCatch({
+    schedule$PipelineList$run(..., resources = resources)
+  }, error = function(e) {
 
-  pipeline_to_run$run(...)
+    if (e$message == "unused argument (`NA` = NULL)") {
+      cli::cli_abort(
+        c(
+          "Failed to invoke pipeline {.code {pipe_name}}",
+          "i" = "Did you forget to pass pipeline arguments as `resources = list(name = val)`?"
+        ),
+        call = NULL
+      )
+    } else {
+      cli::cli_abort(
+        "Failed to invoke pipeline {.code {pipe_name}}",
+        call = NULL
+      )
+    }
+  })
+
+  return(invisible())
 }

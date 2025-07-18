@@ -39,3 +39,75 @@ test_that("invoke triggers the pipeline", {
   status <- schedule$get_status()
   expect_true(status$invoked[status$pipe_name == "chatty"])
 })
+
+test_that("invoke properly passes resources", {
+
+  withr::with_tempdir({
+    dir.create("pipelines")
+    writeLines(
+      "
+      #' @maestroFrequency hourly
+      times2 <- function(val) {
+        val * 2
+      }
+      ",
+      con = "pipelines/invoked.R"
+    )
+
+    schedule <- build_schedule(quiet = TRUE)
+
+    invoke(schedule, "times2", resources = list(val = 2), quiet = TRUE)
+
+    expect_true(get_status(schedule)$success)
+  })
+})
+
+test_that("invoke gives informative error message on failure", {
+
+  withr::with_tempdir({
+    dir.create("pipelines")
+    writeLines(
+      "
+      #' @maestroFrequency hourly
+      i_fail <- function() {
+        stop()
+      }
+      ",
+      con = "pipelines/invoked.R"
+    )
+
+    schedule <- build_schedule(quiet = TRUE)
+
+    invoke(schedule, "i_fail", quiet = TRUE)
+
+    expect_snapshot(schedule$get_status()[, c("invoked", "success")])
+  })
+})
+
+test_that("invoke triggers DAG pipelines", {
+
+  withr::with_tempdir({
+    dir.create("pipelines")
+    writeLines(
+      "
+      #' @maestroFrequency hourly
+      p1 <- function() {
+        2
+      }
+
+      #' @maestroInputs p1
+      p2 <- function(.input) {
+        .input * 2
+      }
+      ",
+      con = "pipelines/dag.R"
+    )
+
+    schedule <- build_schedule(quiet = TRUE)
+
+    invoke(schedule, "p1", quiet = TRUE)
+
+    expect_snapshot(schedule$get_status()[, c("invoked", "success")])
+  })
+})
+
