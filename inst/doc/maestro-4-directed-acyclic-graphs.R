@@ -19,7 +19,7 @@ asciicast::init_knitr_engine(
 options(asciicast_theme = "pkgdown")
 
 ## ----echo=FALSE, warning=FALSE, message=FALSE---------------------------------
-dir.create("pipelines")
+invisible(dir.create("pipelines"))
 writeLines(
   "
   #' @maestroOutputs high_road low_road
@@ -77,8 +77,8 @@ writeLines(
 # }
 
 ## ----echo=FALSE, warning=FALSE, message=FALSE---------------------------------
-file.remove("pipelines/dags.R")
-dir.create("pipelines")
+invisible(file.remove("pipelines/dags.R"))
+invisible(dir.create("pipelines"))
 writeLines(
   "
   #' @maestroFrequency 1 day
@@ -130,6 +130,6 @@ schedule <- build_schedule(quiet = TRUE)
 show_network(schedule)
 
 ## ----cleanup, echo=FALSE, message=FALSE, warning=FALSE------------------------
-unlink("pipelines", recursive = TRUE)
-unlink("transformed_mtcars.csv")
+invisible(unlink("pipelines", recursive = TRUE))
+invisible(unlink("transformed_mtcars.csv"))
 

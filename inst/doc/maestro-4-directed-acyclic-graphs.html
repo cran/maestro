@@ -1282,8 +1282,9 @@ overflow: visible;
 }
 </style>
 <style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -1294,7 +1295,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -1626,14 +1627,14 @@ console will reflect the network structure of the DAG.</p>
 <div class="asciicast" style="color: #172431;font-family: &#39;Fira Code&#39;,Monaco,Consolas,Menlo,&#39;Bitstream Vera Sans Mono&#39;,&#39;Powerline Symbols&#39;,monospace;line-height: 1.300000">
 <pre>
                                                                                 
-── [2025-10-06 08:53:58]                                                        
+── [2025-10-31 09:02:06]                                                        
 Running pipelines <span style="color: #859900;">▶</span>                                                             
-<span style="color: #859900;">✔</span> <span style="color: #268BD2;">start</span> <span style="color: #b8b8b8;">[6ms]</span>                                                                   
-<span style="color: #859900;">✔</span> |-<span style="color: #268BD2;">high_road</span> <span style="color: #b8b8b8;">[14ms]</span>                                                            
+<span style="color: #859900;">✔</span> <span style="color: #268BD2;">start</span> <span style="color: #b8b8b8;">[5ms]</span>                                                                   
+<span style="color: #859900;">✔</span> |-<span style="color: #268BD2;">high_road</span> <span style="color: #b8b8b8;">[13ms]</span>                                                            
 <span style="color: #859900;">✔</span> |-<span style="color: #268BD2;">low_road</span> <span style="color: #b8b8b8;">[4ms]</span>                                                              
                                                                                 
-── [2025-10-06 08:53:58]                                                        
-Pipeline execution completed <span style="color: #525252;">■</span> | 0.044 sec elapsed                              
+── [2025-10-31 09:02:06]                                                        
+Pipeline execution completed <span style="color: #525252;">■</span> | 0.043 sec elapsed                              
 <span style="color: #859900;">✔</span> 3 successes | <span style="color: #D33682;">!</span> 0 warnings | <span style="color: #DC322F;">✖</span> 0 errors | <span style="color: #2AA198;">◼</span> 3 total                           
 ────────────────────────────────────────────────────────────────────────────────
 $start                                                                          
@@ -1673,44 +1674,43 @@ Consider the example on the home page:</p>
 <p>It’s pretty concise, so we probably wouldn’t bother breaking it apart
 in practice, but let’s do it for illustrative purposes (and also get rid
 of the messaging).</p>
-<pre><code>[1] TRUE</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency 1 day</span></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">#&#39; @maestroStartTime 2024-03-25 12:30:00</span></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&#39; @maestroOutputs transform</span></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>extract <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="co"># Imagine this is something way more complicated, like a database call</span></span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  mtcars</span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>}</span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&#39; @maestroOutputs load</span></span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>transform <span class="ot">&lt;-</span> <span class="cf">function</span>(.input) {</span>
-<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>  .input <span class="sc">|&gt;</span> </span>
-<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">hp_deviation =</span> hp <span class="sc">-</span> <span class="fu">mean</span>(hp))</span>
-<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>}</span>
-<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a></span>
-<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&#39; @maestro</span></span>
-<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>load <span class="ot">&lt;-</span> <span class="cf">function</span>(.input) {</span>
-<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>  <span class="fu">write.csv</span>(.input, <span class="at">file =</span> <span class="fu">paste0</span>(<span class="st">&quot;transformed_mtcars.csv&quot;</span>))</span>
-<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>}</span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">library</span>(maestro)</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">build_schedule</span>(<span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>status <span class="ot">&lt;-</span> <span class="fu">run_schedule</span>(</span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  schedule,</span>
-<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  <span class="at">run_all =</span> <span class="cn">TRUE</span></span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency 1 day</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&#39; @maestroStartTime 2024-03-25 12:30:00</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&#39; @maestroOutputs transform</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>extract <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="co"># Imagine this is something way more complicated, like a database call</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  mtcars</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>}</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&#39; @maestroOutputs load</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>transform <span class="ot">&lt;-</span> <span class="cf">function</span>(.input) {</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  .input <span class="sc">|&gt;</span> </span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">hp_deviation =</span> hp <span class="sc">-</span> <span class="fu">mean</span>(hp))</span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>}</span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&#39; @maestro</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>load <span class="ot">&lt;-</span> <span class="cf">function</span>(.input) {</span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a>  <span class="fu">write.csv</span>(.input, <span class="at">file =</span> <span class="fu">paste0</span>(<span class="st">&quot;transformed_mtcars.csv&quot;</span>))</span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">library</span>(maestro)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">build_schedule</span>(<span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>status <span class="ot">&lt;-</span> <span class="fu">run_schedule</span>(</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  schedule,</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  <span class="at">run_all =</span> <span class="cn">TRUE</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>)</span></code></pre></div>
 <div class="asciicast" style="color: #172431;font-family: &#39;Fira Code&#39;,Monaco,Consolas,Menlo,&#39;Bitstream Vera Sans Mono&#39;,&#39;Powerline Symbols&#39;,monospace;line-height: 1.300000">
 <pre>
                                                                                 
-── [2025-10-06 08:53:59]                                                        
+── [2025-10-31 09:02:07]                                                        
 Running pipelines <span style="color: #859900;">▶</span>                                                             
-<span style="color: #859900;">✔</span> <span style="color: #268BD2;">extract</span> <span style="color: #b8b8b8;">[18ms]</span>                                                                
-<span style="color: #859900;">✔</span> |-<span style="color: #268BD2;">transform</span> <span style="color: #b8b8b8;">[9ms]</span>                                                             
-<span style="color: #859900;">✔</span>   |-<span style="color: #268BD2;">load</span> <span style="color: #b8b8b8;">[7ms]</span>                                                                
+<span style="color: #859900;">✔</span> <span style="color: #268BD2;">extract</span> <span style="color: #b8b8b8;">[7ms]</span>                                                                 
+<span style="color: #859900;">✔</span> |-<span style="color: #268BD2;">transform</span> <span style="color: #b8b8b8;">[7ms]</span>                                                             
+<span style="color: #859900;">✔</span>   |-<span style="color: #268BD2;">load</span> <span style="color: #b8b8b8;">[5ms]</span>                                                                
                                                                                 
-── [2025-10-06 08:53:59]                                                        
-Pipeline execution completed <span style="color: #525252;">■</span> | 0.049 sec elapsed                              
+── [2025-10-31 09:02:07]                                                        
+Pipeline execution completed <span style="color: #525252;">■</span> | 0.031 sec elapsed                              
 <span style="color: #859900;">✔</span> 3 successes | <span style="color: #D33682;">!</span> 0 warnings | <span style="color: #DC322F;">✖</span> 0 errors | <span style="color: #2AA198;">◼</span> 3 total                           
 ────────────────────────────────────────────────────────────────────────────────
 </pre>
@@ -1718,8 +1718,8 @@ Pipeline execution completed <span style="color: #525252;">■</span> | 0.049 se
 <p>When developing these pipelines, it is helpful to visualize the
 dependency structure. We can do this by calling
 <code>show_network()</code> on the schedule:</p>
-<div class="grViz html-widget html-fill-item" id="htmlwidget-720b96456c9e52a9db4d" style="width:100%;height:288px;"></div>
-<script type="application/json" data-for="htmlwidget-720b96456c9e52a9db4d">{"x":{"diagram":"digraph {\n\ngraph [layout = \"neato\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"extract\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\", pos = \"0,3!\"] \n  \"2\" [label = \"transform\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\", pos = \"0,2!\"] \n  \"3\" [label = \"load\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\", pos = \"0,1!\"] \n  \"1\"->\"2\" \n  \"2\"->\"3\" \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-18ad1ff5b066299aaca1" style="width:100%;height:288px;"></div>
+<script type="application/json" data-for="htmlwidget-18ad1ff5b066299aaca1">{"x":{"diagram":"digraph {\n\ngraph [layout = \"neato\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"extract\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\", pos = \"0,3!\"] \n  \"2\" [label = \"transform\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\", pos = \"0,2!\"] \n  \"3\" [label = \"load\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\", pos = \"0,1!\"] \n  \"1\"->\"2\" \n  \"2\"->\"3\" \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div class="footnotes footnotes-end-of-document">
 <hr />
