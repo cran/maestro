@@ -55,6 +55,31 @@ test_that("run_schedule with quiet=TRUE prints no messages", {
   expect_gt(length(last_run_messages()), 0)
 })
 
+test_that("run_schedule is idempotent", {
+  
+  schedule <- build_schedule(test_path("test_pipelines_run_all_good"), quiet = TRUE)
+
+  run_schedule(
+    schedule,
+    orch_frequency = "15 minutes",
+    check_datetime = as.POSIXct("2024-04-25 09:35:00", tz = "UTC"),
+    quiet = TRUE
+  )
+
+  status1 <- schedule$get_status()
+
+  run_schedule(
+    schedule,
+    orch_frequency = "15 minutes",
+    check_datetime = as.POSIXct("2024-04-25 09:45:00", tz = "UTC"),
+    quiet = TRUE
+  )
+
+  status2 <- schedule$get_status()
+
+  expect_equal(nrow(status1), nrow(status2))
+})
+
 test_that("run_schedule timeliness checks - pipelines run when they're supposed to", {
 
   schedule <- build_schedule(test_path("test_pipelines_run_all_good"), quiet = TRUE)
@@ -521,7 +546,7 @@ test_that("maestroPriority works as expected", {
   expect_snapshot(status$pipe_name)
 })
 
-test_that("maestroDays works on expected dlays", {
+test_that("maestroDays works on expected days", {
   withr::with_tempdir({
     dir.create("pipelines")
     writeLines(
@@ -558,5 +583,35 @@ test_that("maestroDays works on expected dlays", {
     )
     status <- get_status(schedule)
     expect_false(status$invoked)
+  })
+})
+
+test_that("Pipeline that prints curly brackets runs fine", {
+
+  withr::with_tempdir({
+    dir.create("pipelines")
+    writeLines(
+      "
+      #' test maestro pipeline
+      #'
+      #' @maestroFrequency daily
+      test <- function() {
+        message('{')
+        message('\n')
+      }
+      ",
+      con = "pipelines/test.R"
+    )
+
+    schedule <- build_schedule(quiet = TRUE)
+    run_schedule(
+      schedule,
+      orch_frequency = "1 day",
+      quiet = TRUE,
+      log_to_console = TRUE,
+      log_to_file = TRUE
+    )
+    status <- get_status(schedule)
+    expect_true(status$success)
   })
 })

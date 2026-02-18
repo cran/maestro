@@ -2,11 +2,9 @@
 #' A pipeline is defined as a single R script with a schedule or input
 #' @keywords internal
 MaestroPipeline <- R6::R6Class(
-
   "MaestroPipeline",
 
   public = list(
-
     #' @description
     #' Create a new Pipeline object
     #' @param script_path path to the script
@@ -43,7 +41,6 @@ MaestroPipeline <- R6::R6Class(
       flags = c(),
       run_if = NULL
     ) {
-
       # Update the private attributes
       private$script_path <- script_path
       private$pipe_name <- pipe_name
@@ -53,10 +50,13 @@ MaestroPipeline <- R6::R6Class(
       private$outputs <- outputs
       private$priority <- priority
       private$flags <- flags
-      private$run_if <- if (!is.null(run_if) && trimws(run_if) == "") NULL else run_if
+      private$run_if <- if (!is.null(run_if) && trimws(run_if) == "") {
+        NULL
+      } else {
+        run_if
+      }
 
       if (is.null(inputs)) {
-
         private$tz <- tz
         private$frequency <- frequency
         private$start_time <- lubridate::with_tz(start_time, tz)
@@ -65,56 +65,79 @@ MaestroPipeline <- R6::R6Class(
 
         # Create transformed private attributes
         # Create units and n
-        withCallingHandlers({
-          nunits <- purrr::map(frequency, purrr::possibly(~{
-            parse_rounding_unit(.x)
-          }, otherwise = list(n = NA, unit = NA)))
-        }, purrr_error_indexed = function(err) {
-          rlang::cnd_signal(err$parent)
-        })
+        withCallingHandlers(
+          {
+            nunits <- purrr::map(
+              frequency,
+              purrr::possibly(
+                ~ {
+                  parse_rounding_unit(.x)
+                },
+                otherwise = list(n = NA, unit = NA)
+              )
+            )
+          },
+          purrr_error_indexed = function(err) {
+            rlang::cnd_signal(err$parent)
+          }
+        )
 
         # Create days_of_week and days_of_month from days
-        days_of_week <- purrr::map_if(days, is.factor, as.numeric, .else = ~NA_real_) |>
+        days_of_week <- purrr::map_if(
+          days,
+          is.factor,
+          as.numeric,
+          .else = ~NA_real_
+        ) |>
           purrr::discard(is.na) |>
           purrr::list_c()
-        days_of_month <- purrr::map_if(days, is.numeric, ~.x, .else = ~NA_real_) |>
+        days_of_month <- purrr::map_if(
+          days,
+          is.numeric,
+          ~.x,
+          .else = ~NA_real_
+        ) |>
           purrr::discard(is.na) |>
           purrr::list_c()
 
         # Update the transformed private attributes
-        private$start_time_utc <- lubridate::with_tz(private$start_time, tz = "UTC")
-        private$frequency_n <- purrr::map_int(nunits, ~.x$n)
-        private$frequency_unit <- purrr::map_chr(nunits, ~.x$unit)
+        private$start_time_utc <- lubridate::with_tz(
+          private$start_time,
+          tz = "UTC"
+        )
+        private$frequency_n <- purrr::map_int(nunits, "n")
+        private$frequency_unit <- purrr::map_chr(nunits, "unit")
         private$days_of_week <- days_of_week %n% 1:7
         private$days_of_month <- days_of_month %n% 1:31
 
-        # Create the run sequence
-        start_time_adj <- private$start_time
+        start_time_adj <- .prev_on_cycle(
+          private$start_time,
+          current = lubridate::now(),
+          amount = private$frequency_n,
+          unit = private$frequency_unit
+        )
 
-        is_start_time_old <- tryCatch({
-          start_time_adj < (lubridate::now() - lubridate::days(365))
-        }, error = function(e) {
-          TRUE
-        })
-
-        if (is_start_time_old) {
-          floor_year <- lubridate::year(lubridate::now())
-          start_time_adj <- lubridate::make_datetime(
-            year = floor_year,
-            month = lubridate::month(private$start_time),
-            day = lubridate::day(private$start_time),
-            hour = lubridate::hour(private$start_time),
-            min = lubridate::minute(private$start_time),
-            sec = lubridate::second(private$start_time),
-            tz = private$tz
-          )
+        if (is.na(start_time_adj)) {
+          start_time_adj <- private$start_time
         }
+
+        check_dt_days_out <- switch(
+          private$frequency_unit,
+          second = 3,
+          minute = 7,
+          hour = 60,
+          day = 120,
+          week = 240,
+          month = 365 * 2,
+          quarter = 365 * 4,
+          year = 365 * 10
+        )
 
         private$run_sequence <- get_pipeline_run_sequence(
           pipeline_n = private$frequency_n,
           pipeline_unit = private$frequency_unit,
           pipeline_datetime = private$start_time,
-          check_datetime = start_time_adj + lubridate::days(365 * 2),
+          check_datetime = start_time_adj + lubridate::days(check_dt_days_out),
           pipeline_hours = private$hours,
           pipeline_days_of_week = private$days_of_week,
           pipeline_days_of_month = private$days_of_month,
@@ -155,12 +178,13 @@ MaestroPipeline <- R6::R6Class(
       }
 
       cli::cli_h3("Status")
-      switch (private$status,
-              `Not Run` = cli::cli_li(cli::col_magenta(private$status)),
-              `Success` = cli::cli_li(cli::col_green(private$status)),
-              `Warning` = cli::cli_li(cli::col_yellow(private$status)),
-              `Error` = cli::cli_li(cli::col_red(private$status)),
-              cli::cli_li("Unknown")
+      switch(
+        private$status,
+        `Not Run` = cli::cli_li(cli::col_magenta(private$status)),
+        `Success` = cli::cli_li(cli::col_green(private$status)),
+        `Warning` = cli::cli_li(cli::col_yellow(private$status)),
+        `Error` = cli::cli_li(cli::col_red(private$status)),
+        cli::cli_li("Unknown")
       )
 
       if (!is.na(private$run_time_start)) {
@@ -175,7 +199,7 @@ MaestroPipeline <- R6::R6Class(
     #' @param quiet whether to silence console output
     #' @param log_file_max_bytes maximum bytes of the log file before trimming
     #' @param .input input values from upstream pipelines
-    #' @param cli_prepend text to prepend to cli output
+    #' @param depth number of inputting pipelines above the current
     #' @param log_to_console whether or not to output statements in the console (FALSE is to suppress and append to log)
     #' @param run_id unique id for the run
     #' @param input_run_id unique id of the run that inputted into the current run (NA if there is no input)
@@ -189,14 +213,13 @@ MaestroPipeline <- R6::R6Class(
       quiet = FALSE,
       log_file_max_bytes = 1e6,
       .input = NULL,
-      cli_prepend = "",
+      depth = 0,
       log_to_console = FALSE,
       run_id = NA_character_,
       input_run_id = NA_character_,
       lineage = c(),
       ...
     ) {
-
       internal_run_id <- make_id()
 
       pipe_name <- private$pipe_name
@@ -245,9 +268,12 @@ MaestroPipeline <- R6::R6Class(
 
       do_run <- TRUE
       if (!is.null(private$run_if)) {
-
         if (!quiet) {
-          cli::cli_progress_step("? {cli::col_blue(pipe_name)}")
+          prepend <- ""
+          if (depth != 0) {
+            prepend <- cli::format_inline(rep("  ", times = depth), "|-")
+          }
+          cli::cli_progress_step("{prepend}{cli::col_blue(pipe_name)} (?)")
         }
 
         cond <- withCallingHandlers(
@@ -257,33 +283,48 @@ MaestroPipeline <- R6::R6Class(
             inherit = maestro_context
           ),
           error = private$cond_error_handler(internal_run_id = internal_run_id),
-          warning = private$cond_warning_handler(internal_run_id = internal_run_id),
-          message = private$cond_message_handler(internal_run_id = internal_run_id)
+          warning = private$cond_warning_handler(
+            internal_run_id = internal_run_id
+          ),
+          message = private$cond_message_handler(
+            internal_run_id = internal_run_id
+          )
         )
 
         if (!rlang::is_scalar_logical(cond)) {
           withCallingHandlers(
-            stop(glue::glue("`{private$run_if}` did not return a single boolean."), call. = FALSE),
-            error = private$cond_error_handler(internal_run_id = internal_run_id)
+            stop(
+              glue::glue("`{private$run_if}` did not return a single boolean."),
+              call. = FALSE
+            ),
+            error = private$cond_error_handler(
+              internal_run_id = internal_run_id
+            )
           )
         }
 
         do_run <- cond
       }
 
-      if (!do_run) return(invisible())
-      
+      if (!do_run) {
+        return(invisible())
+      }
+
       private$status <- "Success"
 
       run_time_start <- lubridate::now()
       private$run_time_start <- run_time_start
 
       if (!quiet) {
-        cli::cli_progress_step("{cli_prepend}{cli::col_blue(pipe_name)}")
+        prepend <- ""
+        if (depth != 0) {
+          prepend <- cli::format_inline(rep("  ", times = depth), "|-")
+        }
+        cli::cli_progress_step("{prepend}{cli::col_blue(pipe_name)}")
       }
 
       private$insert_run_time_attributes(
-        internal_run_id, 
+        internal_run_id,
         list(
           run_id = run_id,
           invoked = TRUE,
@@ -294,7 +335,11 @@ MaestroPipeline <- R6::R6Class(
       )
 
       results <- withCallingHandlers(
-        do.call(pipe_name, args = resources[names(args)], envir = maestro_context),
+        do.call(
+          pipe_name,
+          args = resources[names(args)],
+          envir = maestro_context
+        ),
         error = private$error_handler(internal_run_id = internal_run_id),
         warning = private$warning_handler(internal_run_id = internal_run_id),
         message = private$message_handler(internal_run_id = internal_run_id)
@@ -307,7 +352,7 @@ MaestroPipeline <- R6::R6Class(
 
       private$run_time_artifacts[[internal_run_id]] <- results
       private$insert_run_time_attributes(
-        internal_run_id, 
+        internal_run_id,
         list(
           success = TRUE,
           pipeline_ended = run_time_end
@@ -329,16 +374,16 @@ MaestroPipeline <- R6::R6Class(
     #' @return data.frame
     get_schedule = function() {
       dplyr::tibble(
-        script_path = private$script_path %n% character(),
-        pipe_name = private$pipe_name %n% character(),
-        frequency = private$frequency %n% character(),
-        start_time = private$start_time %n% lubridate::POSIXct(),
-        tz = private$tz %n% character(),
-        skip = private$skip %n% logical(),
-        log_level = private$log_level %n% character(),
-        frequency_n = private$frequency_n %n% integer(),
-        frequency_unit = private$frequency_unit %n% character(),
-        priority = private$priority
+        script_path = private$script_path %n% NA_character_,
+        pipe_name = private$pipe_name %n% NA_character_,
+        frequency = private$frequency %n% NA_character_,
+        start_time = private$start_time %n% lubridate::NA_POSIXct_,
+        tz = private$tz %n% NA_character_,
+        skip = private$skip %n% NA,
+        log_level = private$log_level %n% NA_character_,
+        frequency_n = private$frequency_n %n% NA_integer_,
+        frequency_unit = private$frequency_unit %n% NA_character_,
+        priority = private$priority %n% NA_integer_
       )
     },
 
@@ -349,14 +394,25 @@ MaestroPipeline <- R6::R6Class(
     #' @param check_datetime datetime against which to check the timeliness of the pipeline (should almost always be now)
     #' @param ... unused
     #' @return MaestroPipeline
-    check_timeliness = function(orch_unit, orch_n, check_datetime = lubridate::now(), ...) {
-
-      if (private$skip) return(FALSE)
-      if (!is.null(private$inputs)) return(TRUE) # pipes with a dependency are always timely
+    check_timeliness = function(
+      orch_unit,
+      orch_n,
+      check_datetime = lubridate::now(),
+      ...
+    ) {
+      if (private$skip) {
+        return(FALSE)
+      }
+      if (!is.null(private$inputs)) {
+        return(TRUE)
+      } # pipes with a dependency are always timely
 
       orch_string <- paste(orch_n, orch_unit)
       orch_frequency_seconds <- convert_to_seconds(orch_string)
-      check_datetime_round <- timechange::time_round(check_datetime, unit = orch_string)
+      check_datetime_round <- timechange::time_round(
+        check_datetime,
+        unit = orch_string
+      )
 
       pipeline_sequence <- private$run_sequence
 
@@ -364,11 +420,16 @@ MaestroPipeline <- R6::R6Class(
         pipeline_sequence <- lubridate::as_date(pipeline_sequence)
       }
 
-      pipeline_sequence_round <- unique(timechange::time_round(pipeline_sequence, unit = orch_string))
+      pipeline_sequence_round <- unique(timechange::time_round(
+        pipeline_sequence,
+        unit = orch_string
+      ))
 
       check_datetime_int <- as.integer(check_datetime_round)
       pipeline_seq_round_int <- as.integer(pipeline_sequence_round)
-      is_scheduled_now_idx <- which(pipeline_seq_round_int %in% check_datetime_int)
+      is_scheduled_now_idx <- which(
+        pipeline_seq_round_int %in% check_datetime_int
+      )
       if (length(is_scheduled_now_idx) == 0) {
         is_scheduled_now <- FALSE
       } else {
@@ -376,14 +437,19 @@ MaestroPipeline <- R6::R6Class(
       }
 
       if (is_scheduled_now) {
-        next_run <- tryCatch({
-          next_idx <- is_scheduled_now_idx + 1
-          pipeline_sequence_round[[next_idx]]
-        }, error = function(e) {
-          NULL
-        })
+        next_run <- tryCatch(
+          {
+            next_idx <- is_scheduled_now_idx + 1
+            pipeline_sequence_round[[next_idx]]
+          },
+          error = function(e) {
+            NULL
+          }
+        )
       } else {
-        next_run <- pipeline_sequence_round[pipeline_sequence_round > check_datetime_round][[1]]
+        next_run <- pipeline_sequence_round[
+          pipeline_sequence_round > check_datetime_round
+        ][[1]]
       }
 
       private$next_run <- next_run
@@ -442,7 +508,9 @@ MaestroPipeline <- R6::R6Class(
     #' Get artifacts (return values) from the pipeline
     #' @return list
     get_artifacts = function() {
-      if (length(private$run_time_artifacts) == 1) return(private$run_time_artifacts[[1]])
+      if (length(private$run_time_artifacts) == 1) {
+        return(private$run_time_artifacts[[1]])
+      }
       private$run_time_artifacts
     },
 
@@ -491,12 +559,42 @@ MaestroPipeline <- R6::R6Class(
     },
 
     #' @description
+    #' Resets run time attributes
+    #' @return invisible
+    reset_run_time_attributes = function() {
+      private$run_time_attributes <- dplyr::tibble(
+        internal_run_id = NA_character_,
+        invoked = FALSE,
+        success = NA,
+        pipeline_started = lubridate::NA_POSIXct_,
+        pipeline_ended = lubridate::NA_POSIXct_,
+        errors = 0L,
+        warnings = 0L,
+        messages = 0L,
+        run_id = NA_character_,
+        input_run_id = NA_character_,
+        lineage = NA_character_
+      )
+      private$status <- "Not Run"
+      private$errors <- NULL
+      private$warnings <- NULL
+      private$messages <- NULL
+      private$returns <- NULL
+      private$run_time_start <- lubridate::NA_POSIXct_
+      private$run_time_end <- lubridate::NA_POSIXct_
+    },
+
+    #' @description
     #' Get the run sequence of a pipeline
     #' @param n optional sequence limit
     #' @param min_datetime optional minimum datetime
     #' @param max_datetime optional maximum datetime
     #' @return vector
-    get_run_sequence = function(n = NULL, min_datetime = NULL, max_datetime = NULL) {
+    get_run_sequence = function(
+      n = NULL,
+      min_datetime = NULL,
+      max_datetime = NULL
+    ) {
       seq <- private$run_sequence
 
       if (!is.null(n)) {
@@ -518,7 +616,6 @@ MaestroPipeline <- R6::R6Class(
   ),
 
   private = list(
-
     script_path = NA_character_,
     pipe_name = NA_character_,
     frequency = NA_character_,
@@ -553,9 +650,10 @@ MaestroPipeline <- R6::R6Class(
     messages = NULL,
 
     escape_for_glue = function(msg) {
+      msg <- trimws(msg)
       logger::skip_formatter(msg)
     },
-    
+
     run_time_attributes = dplyr::tibble(
       internal_run_id = NA_character_,
       invoked = FALSE,
@@ -573,26 +671,37 @@ MaestroPipeline <- R6::R6Class(
     run_time_artifacts = list(),
 
     insert_run_time_attributes = function(internal_run_id, attributes) {
-      row_idx <- which(private$run_time_attributes$internal_run_id == internal_run_id)
-      
+      row_idx <- which(
+        private$run_time_attributes$internal_run_id == internal_run_id
+      )
+
       if (length(row_idx) == 0) {
-        placeholder_idx <- which(is.na(private$run_time_attributes$internal_run_id))
-        
+        placeholder_idx <- which(is.na(
+          private$run_time_attributes$internal_run_id
+        ))
+
         if (length(placeholder_idx) > 0) {
           row_idx <- placeholder_idx[1]
-          private$run_time_attributes$internal_run_id[row_idx] <- internal_run_id
+          private$run_time_attributes$internal_run_id[
+            row_idx
+          ] <- internal_run_id
         } else {
           new_row <- dplyr::tibble(internal_run_id = internal_run_id)
           for (attr_name in names(attributes)) {
             new_row[[attr_name]] <- NA
           }
-          private$run_time_attributes <- dplyr::bind_rows(private$run_time_attributes, new_row)
+          private$run_time_attributes <- dplyr::bind_rows(
+            private$run_time_attributes,
+            new_row
+          )
           row_idx <- nrow(private$run_time_attributes)
         }
       }
-      
+
       for (i in seq_along(attributes)) {
-        private$run_time_attributes[[names(attributes)[i]]][row_idx] <- attributes[[i]]
+        private$run_time_attributes[[names(attributes)[i]]][
+          row_idx
+        ] <- attributes[[i]]
       }
     },
 
@@ -600,13 +709,16 @@ MaestroPipeline <- R6::R6Class(
       function(e) {
         private$errors <- c(private$errors, e$message)
         private$status <- "Error"
-        logger::log_error(private$escape_for_glue(conditionMessage(e)), namespace = private$pipe_name)
+        logger::log_error(
+          private$escape_for_glue(conditionMessage(e)),
+          namespace = private$pipe_name
+        )
         run_time_end <- lubridate::now()
         private$run_time_end <- run_time_end
         private$insert_run_time_attributes(
           internal_run_id,
           list(
-            pipeline_ended = run_time_end, 
+            pipeline_ended = run_time_end,
             success = FALSE,
             errors = 1L
           )
@@ -616,10 +728,16 @@ MaestroPipeline <- R6::R6Class(
 
     warning_handler = function(internal_run_id = NULL) {
       function(w) {
-        warning_log <- logger::log_warn(private$escape_for_glue(conditionMessage(w)), namespace = private$pipe_name)
+        warning_log <- logger::log_warn(
+          private$escape_for_glue(conditionMessage(w)),
+          namespace = private$pipe_name
+        )
         private$warnings <- c(private$warnings, w$message)
         private$status <- "Warning"
-        cur_n_warnings <- private$run_time_attributes$warnings[private$run_time_attributes$internal_run_id == internal_run_id] %n% 0L
+        cur_n_warnings <- private$run_time_attributes$warnings[
+          private$run_time_attributes$internal_run_id == internal_run_id
+        ] %n%
+          0L
         private$insert_run_time_attributes(
           internal_run_id,
           list(
@@ -632,9 +750,15 @@ MaestroPipeline <- R6::R6Class(
 
     message_handler = function(internal_run_id = NULL) {
       function(m) {
-        message_log <- logger::log_info(private$escape_for_glue(conditionMessage(m)), namespace = private$pipe_name)
+        message_log <- logger::log_info(
+          private$escape_for_glue(conditionMessage(m)),
+          namespace = private$pipe_name
+        )
         private$messages <- c(private$messages, m$message)
-        cur_n_messages <- private$run_time_attributes$messages[private$run_time_attributes$internal_run_id == internal_run_id] %n% 0L
+        cur_n_messages <- private$run_time_attributes$messages[
+          private$run_time_attributes$internal_run_id == internal_run_id
+        ] %n%
+          0L
         private$insert_run_time_attributes(
           internal_run_id,
           list(
@@ -650,14 +774,19 @@ MaestroPipeline <- R6::R6Class(
         e$message <- paste("Error evaluating condition:", e$message)
         private$errors <- e
         private$status <- "Error"
-        logger::log_error(private$escape_for_glue("Error evaluating condition: {conditionMessage(e)}"), namespace = private$pipe_name)
+        logger::log_error(
+          private$escape_for_glue(
+            "Error evaluating condition: {conditionMessage(e)}"
+          ),
+          namespace = private$pipe_name
+        )
         run_time_end <- lubridate::now()
         private$run_time_end <- run_time_end
         private$insert_run_time_attributes(
           internal_run_id,
           list(
             invoked = TRUE,
-            pipeline_ended = run_time_end, 
+            pipeline_ended = run_time_end,
             errors = 1L
           )
         )
@@ -666,11 +795,19 @@ MaestroPipeline <- R6::R6Class(
 
     cond_warning_handler = function(internal_run_id) {
       function(w) {
-        warning_log <- logger::log_warn(private$escape_for_glue("Warning evaluating condition: {conditionMessage(w)}"), namespace = private$pipe_name)
+        warning_log <- logger::log_warn(
+          private$escape_for_glue(
+            "Warning evaluating condition: {conditionMessage(w)}"
+          ),
+          namespace = private$pipe_name
+        )
         w$message <- paste("Warned while evaluating condition:", w$message)
         private$warnings <- c(private$warnings, w$message)
         private$status <- "Warning"
-        cur_n_warnings <- private$run_time_attributes$warnings[private$run_time_attributes$internal_run_id == internal_run_id] %n% 0L
+        cur_n_warnings <- private$run_time_attributes$warnings[
+          private$run_time_attributes$internal_run_id == internal_run_id
+        ] %n%
+          0L
         private$insert_run_time_attributes(
           internal_run_id,
           list(
@@ -683,10 +820,19 @@ MaestroPipeline <- R6::R6Class(
 
     cond_message_handler = function(internal_run_id) {
       function(m) {
-        message_log <- logger::log_info(private$escape_for_glue(conditionMessage(m)), namespace = private$pipe_name)
+        message_log <- logger::log_info(
+          private$escape_for_glue(conditionMessage(m)),
+          namespace = private$pipe_name
+        )
         private$messages <- c(private$messages, m$message)
-        private$run_time_attributes[[internal_run_id]]$messages <- c(private$run_time_attributes[[internal_run_id]]$messages, m$message)
-        cur_n_messages <- private$run_time_attributes$messages[private$run_time_attributes$internal_run_id == internal_run_id] %n% 0L
+        private$run_time_attributes[[internal_run_id]]$messages <- c(
+          private$run_time_attributes[[internal_run_id]]$messages,
+          m$message
+        )
+        cur_n_messages <- private$run_time_attributes$messages[
+          private$run_time_attributes$internal_run_id == internal_run_id
+        ] %n%
+          0L
         private$insert_run_time_attributes(
           internal_run_id,
           list(
