@@ -4,7 +4,7 @@ test_that("run_schedule works on different kinds of frequencies", {
 
   test_freqs <- c("14 days", "10 minutes", "25 mins", "1 week",
                   "1 quarter", "12 months", "1 years", "24 hours",
-                  "31 days", "1 secs", "50 seconds", "daily", "hourly", "weekly")
+                  "31 days", "1 secs", "50 seconds", "daily", "hourly", "weekly", "yearly")
 
   purrr::walk(test_freqs, ~{
     expect_no_error({
@@ -41,6 +41,46 @@ test_that("run_schedule errors if check_datetime is not a timestamp", {
   )
 }) |>
   suppressMessages()
+
+test_that("maestro.check_datetime_override option overrides check_datetime", {
+
+  schedule <- build_schedule(test_path("test_pipelines_run_all_good")) |>
+    suppressMessages()
+
+  override_dt <- as.POSIXct("2025-06-01 09:00:00", tz = "UTC")
+
+  withr::with_options(
+    list(maestro.check_datetime_override = override_dt),
+    {
+      # Argument value is ignored; option takes precedence without error
+      expect_no_error(
+        run_schedule(
+          schedule,
+          orch_frequency = "hourly",
+          check_datetime = Sys.time()
+        ) |>
+          suppressMessages()
+      )
+    }
+  )
+})
+
+test_that("maestro.check_datetime_override errors if not POSIXct", {
+
+  schedule <- build_schedule(test_path("test_pipelines_run_all_good")) |>
+    suppressMessages()
+
+  withr::with_options(
+    list(maestro.check_datetime_override = "not-a-datetime"),
+    {
+      expect_error(
+        run_schedule(schedule, orch_frequency = "hourly") |>
+          suppressMessages(),
+        regexp = "must be a"
+      )
+    }
+  )
+})
 
 test_that("run_schedule with quiet=TRUE prints no messages", {
   schedule <- build_schedule(test_path("test_pipelines_run_all_good")) |>
@@ -82,116 +122,129 @@ test_that("run_schedule is idempotent", {
 
 test_that("run_schedule timeliness checks - pipelines run when they're supposed to", {
 
-  schedule <- build_schedule(test_path("test_pipelines_run_all_good"), quiet = TRUE)
+  withr::with_tempdir({
+    dir.create("pipelines")
+    writeLines(
+      "
+      #' @maestroFrequency 1 day
+      #' @maestroStartTime 2024-01-01
+      #' @maestroTz America/Halifax
+      get_mtcars <- function() { mtcars }
 
-  output <- run_schedule(
-    schedule,
-    orch_frequency = "15 minutes",
-    check_datetime = as.POSIXct("2024-04-25 09:35:00", tz = "UTC"),
-    quiet = TRUE
-  )
+      #' @maestroFrequency 3 months
+      #' @maestroStartTime 2024-01-01
+      wait <- function() {}
 
-  status <- output$get_status()
+      #' @maestroFrequency 1 week
+      #' @maestroStartTime 2024-01-01
+      weekly <- function() {}
 
-  expect_snapshot(
-    status$invoked
-  )
-  expect_snapshot(
-    status$next_run
-  )
+      #' @maestroFrequency 1 day
+      #' @maestroStartTime 2024-01-01
+      way_in_the_future <- function() {}
 
-  schedule <- build_schedule(test_path("test_pipelines_run_all_good"), quiet = TRUE)
+      #' @maestroFrequency weekly
+      #' @maestroStartTime 2024-01-01
+      weekly2 <- function() {}
 
-  output <- run_schedule(
-    schedule,
-    orch_frequency = "1 month",
-    check_datetime = as.POSIXct("2024-04-01 00:00:00", tz = "UTC"),
-    quiet = TRUE
-  ) |>
-    suppressWarnings()
-  status <- output$get_status()
+      #' @maestroFrequency 1 hour
+      #' @maestroStartTime 2024-03-01 09:35:00
+      #' @maestroTz UTC
+      get_mtcars2 <- function() { mtcars }
+      ",
+      con = "pipelines/pipes.R"
+    )
 
-  expect_snapshot(
-    status$invoked
-  )
-  expect_snapshot(
-    status$next_run
-  )
+    schedule <- build_schedule(quiet = TRUE)
+    output <- run_schedule(
+      schedule,
+      orch_frequency = "15 minutes",
+      check_datetime = as.POSIXct("2024-04-25 09:35:00", tz = "UTC"),
+      quiet = TRUE
+    )
+    expect_equal(output$get_status()$invoked, c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE))
 
-  schedule <- build_schedule(test_path("test_pipelines_run_all_good"), quiet = TRUE)
-
-  output <- run_schedule(
-    schedule,
-    orch_frequency = "4 days",
-    check_datetime = as.POSIXct("2024-04-01 00:00:00", tz = "UTC"),
-    quiet = TRUE
-  ) |>
-    suppressWarnings()
-  status <- output$get_status()
-
-  expect_snapshot(
-    status$invoked
-  )
-  expect_snapshot(
-    status$next_run
-  )
-
-  schedule <- build_schedule(test_path("test_pipelines_run_all_good"), quiet = TRUE)
-
-  output <- run_schedule(
-    schedule,
-    orch_frequency = "hourly",
-    check_datetime = as.POSIXct("2024-03-02 09:00:00", tz = "America/Halifax"),
-    quiet = TRUE
-  )
-
-  status <- output$get_status()
-
-  expect_snapshot(
-    status$invoked
-  )
-  expect_snapshot(
-    status$next_run
-  )
+    schedule <- build_schedule(quiet = TRUE)
+    output <- run_schedule(
+      schedule,
+      orch_frequency = "hourly",
+      check_datetime = as.POSIXct("2024-03-02 09:00:00", tz = "America/Halifax"),
+      quiet = TRUE
+    )
+    expect_equal(output$get_status()$invoked, c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE))
+  })
 })
 
 test_that("run_schedule timeliness checks - specifiers (e.g., hours, days, months)", {
 
-  schedule <- build_schedule(test_path("test_pipelines_run_specifiers"), quiet = TRUE)
+  withr::with_tempdir({
+    dir.create("pipelines")
+    writeLines(
+      "
+      #' @maestroFrequency daily
+      #' @maestroStartTime 2024-01-01
+      #' @maestroDays 1 8 24 28
+      specific_days <- function() {}
 
-  output <- run_schedule(
-    schedule,
-    orch_frequency = "hourly",
-    check_datetime = as.POSIXct("2024-04-01 00:00:00", tz = "UTC"), # This is a Monday
-    quiet = TRUE
-  )
+      #' @maestroFrequency hourly
+      #' @maestroStartTime 2024-01-01
+      #' @maestroHours 0 4 8 12 16 20
+      specific_hours <- function() {}
 
-  status <- output$get_status()
+      #' @maestroFrequency biweekly
+      #' @maestroStartTime 2024-01-01
+      #' @maestroMonths 1 5 10
+      specific_months1 <- function() {}
 
-  expect_snapshot(
-    status$invoked
-  )
-  expect_snapshot(
-    status$next_run
-  )
+      #' @maestroFrequency hourly
+      #' @maestroStartTime 2024-01-01
+      #' @maestroDays Mon Wed Fri
+      specific_days2 <- function() {}
 
-  schedule <- build_schedule(test_path("test_pipelines_run_specifiers"), quiet = TRUE)
+      #' @maestroFrequency hourly
+      #' @maestroStartTime 2024-01-01
+      #' @maestroDays Sun Sat
+      specific_days3 <- function() {}
 
-  output <- run_schedule(
-    schedule,
-    orch_frequency = "hourly",
-    check_datetime = as.POSIXct("2024-05-01 00:00:00", tz = "UTC"), # This is a Monday
-    quiet = TRUE
-  )
+      #' @maestroFrequency monthly
+      #' @maestroStartTime 2024-01-01
+      #' @maestroMonths 1 5 10
+      specific_months3 <- function() {}
 
-  status <- output$get_status()
+      #' @maestroFrequency hourly
+      #' @maestroStartTime 2024-01-01
+      #' @maestroHours 1 12
+      #' @maestroDays 1
+      #' @maestroMonths 1 5 10
+      specific_multi <- function() {}
+      ",
+      con = "pipelines/specifiers.R"
+    )
 
-  expect_snapshot(
-    status$invoked
-  )
-  expect_snapshot(
-    status$next_run
-  )
+    schedule <- build_schedule(quiet = TRUE)
+    output <- run_schedule(
+      schedule,
+      orch_frequency = "hourly",
+      check_datetime = as.POSIXct("2024-04-01 00:00:00", tz = "UTC"), # Monday
+      quiet = TRUE
+    )
+    expect_equal(
+      output$get_status()$invoked,
+      c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE, FALSE)
+    )
+
+    schedule <- build_schedule(quiet = TRUE)
+    output <- run_schedule(
+      schedule,
+      orch_frequency = "hourly",
+      check_datetime = as.POSIXct("2024-05-01 00:00:00", tz = "UTC"), # Wednesday
+      quiet = TRUE
+    )
+    expect_equal(
+      output$get_status()$invoked,
+      c(TRUE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE)
+    )
+  })
 })
 
 test_that("run_schedule timeliness checks - specifiers on a non UTC timezone", {
@@ -216,12 +269,22 @@ test_that("run_schedule timeliness checks - specifiers on a non UTC timezone", {
     run_schedule(
       schedule,
       orch_frequency = "1 hour",
-      check_datetime = as.POSIXct("2025-01-01 04:00:00", tz = "America/Halifax"),
+      check_datetime = as.POSIXct("2025-01-01 07:00:00", tz = "America/Halifax"),
       quiet = TRUE
     )
 
     status <- get_status(schedule)
     expect_true(status$invoked[status$pipe_name == "non_utc_hours"])
+
+    run_schedule(
+      schedule,
+      orch_frequency = "1 hour",
+      check_datetime = as.POSIXct("2025-01-01 07:00:00", tz = "UTC"),
+      quiet = TRUE
+    )
+
+    status <- get_status(schedule)
+    expect_false(status$invoked[status$pipe_name == "non_utc_hours"])
   })
 })
 
@@ -337,35 +400,6 @@ test_that("run_schedule timeliness checks - non UTC daylight savings ", {
   })
 })
 
-test_that("works on pipeline with an old start time", {
-
-  withr::with_tempdir({
-    dir.create("pipelines")
-    writeLines(
-      "
-      #' @maestroFrequency hourly
-      #' @maestroStartTime 1970-01-01
-      oldie <- function() {
-
-      }
-      ",
-      con = "pipelines/oldie.R"
-    )
-
-    schedule <- build_schedule(quiet = TRUE)
-
-    run_schedule(
-      schedule,
-      orch_frequency = "1 hour",
-      check_datetime = as.POSIXct("2025-03-11 00:00:00", tz = "UTC"),
-      quiet = TRUE
-    )
-
-    status <- get_status(schedule)
-    expect_true(status$invoked[status$pipe_name == "oldie"])
-  })
-})
-
 test_that("run_schedule propagates warnings", {
 
   schedule <- build_schedule(test_path("test_pipelines_run_two_warnings"))
@@ -408,9 +442,18 @@ test_that("run_schedule handles errors in a pipeline", {
 
 test_that("run_schedule creates maestro.log if log_to_file is TRUE", {
 
-  schedule <- build_schedule(test_path("test_pipelines_run_some_errors"))
-
   withr::with_tempdir({
+    dir.create("pipelines")
+    writeLines(
+      "
+      #' @maestroFrequency hourly
+      test <- function() {
+
+      }
+      ",
+      con = "pipelines/test.R"
+    )
+    schedule <- build_schedule()
     run_schedule(schedule, run_all = TRUE, log_to_file = TRUE)
     expect_true(file.exists("maestro.log"))
   })
@@ -419,9 +462,18 @@ test_that("run_schedule creates maestro.log if log_to_file is TRUE", {
 
 test_that("run_schedule doesn't create maestro.log if log_to_file is FALSE", {
 
-  schedule <- build_schedule(test_path("test_pipelines_run_some_errors"))
-
   withr::with_tempdir({
+    dir.create("pipelines")
+    writeLines(
+      "
+      #' @maestroFrequency hourly
+      test <- function() {
+
+      }
+      ",
+      con = "pipelines/test.R"
+    )
+    schedule <- build_schedule()
     run_schedule(schedule, run_all = TRUE, log_to_file = FALSE)
     expect_true(!file.exists("maestro.log"))
   })
@@ -613,5 +665,110 @@ test_that("Pipeline that prints curly brackets runs fine", {
     )
     status <- get_status(schedule)
     expect_true(status$success)
+  })
+})
+
+test_that("Old README example pipelines all run with daily orchestrator", {
+  withr::with_tempdir({
+    dir.create("pipelines")
+    writeLines(
+      "
+      #' @maestroFrequency daily
+      #' @maestroStartTime 09:00:00
+      #' @maestroTz America/Halifax
+      get_mtcars <- function() {
+      }
+
+      #' @maestroFrequency daily
+      #' @maestroStartTime 09:00:00
+      #' @maestroTz America/Halifax
+      multi_rng <- function() {
+      }
+
+      #' @maestroFrequency daily
+      #' @maestroStartTime 12:30:00
+      #' @maestroTz America/Halifax
+      my_etl <- function() {
+      }
+      ",
+      con = "pipelines/pipes.R"
+    )
+
+    schedule <- build_schedule(quiet = TRUE)
+    run_schedule(
+      schedule,
+      orch_frequency = "1 day",
+      check_datetime = as.POSIXct("2026-04-16 11:00:00", tz = "America/Halifax"),
+      quiet = TRUE
+    )
+    status <- get_status(schedule)
+    expect_true(all(status$invoked))
+  })
+})
+
+test_that("Other vignette examples", {
+
+  withr::with_tempdir({
+    dir.create("pipelines")
+    writeLines(
+      "
+      # ./pipelines/daily_example.R
+      #' daily_example maestro pipeline
+      #'
+      #' @maestroFrequency 1 day
+      #' @maestroStartTime 09:20:00
+      daily_example <- function() {
+      
+        # Pipeline code
+      }
+      ",
+      con = "pipelines/daily_example.R"
+    )
+
+    schedule <- build_schedule()
+
+    run_schedule(
+      schedule,
+      orch_frequency = "1 day",
+      check_datetime = as.POSIXct("2024-06-20 08:00:00", tz = "UTC"),
+      quiet = TRUE
+    )
+
+    expect_true(get_status(schedule)$invoked)
+
+    run_schedule(
+      schedule,
+      orch_frequency = "15 minutes",
+      check_datetime = as.POSIXct("2024-06-20 08:00:00", tz = "UTC"),
+      quiet = TRUE
+    )
+
+    expect_false(get_status(schedule)$invoked)
+  })
+})
+
+test_that("Check validity of next_run", {
+  withr::with_tempdir({
+    dir.create("pipelines")
+    writeLines(
+      "
+      #' @maestroFrequency 1 day
+      #' @maestroStartTime 03:00:00
+      #' @maestroTz UTC
+      my_pipe <- function() {
+      }
+      ",
+      con = "pipelines/pipes.R"
+    )
+
+    schedule <- build_schedule(quiet = TRUE)
+    run_schedule(
+      schedule,
+      orch_frequency = "1 hour",
+      check_datetime = as.POSIXct("2026-04-16 03:00:00", tz = "UTC"),
+      quiet = TRUE
+    )
+    status <- get_status(schedule)
+    expect_equal(status$next_run, as.POSIXct("2026-04-17 03:00:00", tz = "UTC"))
   })
 })

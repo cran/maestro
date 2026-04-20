@@ -122,13 +122,6 @@ writeLines(
 #   write.csv(.input, file = paste0("transformed_mtcars.csv"))
 # }
 
-## ----echo=FALSE, warning=FALSE, message=FALSE---------------------------------
-library(maestro)
-
-schedule <- build_schedule(quiet = TRUE)
-
-show_network(schedule)
-
 ## ----cleanup, echo=FALSE, message=FALSE, warning=FALSE------------------------
 invisible(unlink("pipelines", recursive = TRUE))
 invisible(unlink("transformed_mtcars.csv"))

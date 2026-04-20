@@ -57,7 +57,7 @@ writeLines(
   #' daily_example maestro pipeline
   #'
   #' @maestroFrequency 1 day
-  #' @maestroStartTime 2024-06-20 09:20:00
+  #' @maestroStartTime 09:20:00
   daily_example <- function() {
   
     # Pipeline code
@@ -72,7 +72,7 @@ writeLines(
 #' daily_example maestro pipeline
 #'
 #' @maestroFrequency 1 day
-#' @maestroStartTime 2024-06-20 09:20:00
+#' @maestroStartTime 09:20:00
 daily_example <- function() {
 
   # Pipeline code
@@ -147,8 +147,6 @@ All three pipelines are hourly but they start on different 10-minute intervals. 
 So a good heuristic is to run it as often as the smallest interval of time difference between any pipeline. This is pretty good so long as we don't run it so often that the pipelines can't complete before the next execution time. We don't recommend running the orchestrator more frequently than every 5 minutes unless you're confident that your pipelines are fast to execute.[^1]
 
 [^1]: Make sure you consider the amount of time it takes to execute `build_schedule()` and that you account for the additional work done in `run_schedule()` not related to your actual pipeline logic.
-
-Maestro has a function for determining the ideal orchestrator frequency based on the pipeline frequencies in the project called `suggest_orch_frequency()`. It looks for the shortest interval of time between any future pipeline executions and suggests that for the frequency.
 
 ## Irregular Schedules
 

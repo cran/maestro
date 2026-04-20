@@ -13,6 +13,7 @@ asciicast::init_knitr_engine(
   same_process = TRUE,
   startup = quote({
     library(maestro)
+    options(maestro.check_datetime_override = as.POSIXct("2026-04-21 03:00:00", tz = "UTC"))
     set.seed(1) 
   })
 )
@@ -29,7 +30,7 @@ writeLines(
   #' my_pipe maestro pipeline
   #'
   #' @maestroFrequency 1 day
-  #' @maestroStartTime 2024-05-24
+  #' @maestroStartTime 03:00:00
   #' @maestroTz UTC
   #' @maestroLogLevel INFO
   
@@ -44,7 +45,7 @@ writeLines(
 # #' my_pipe maestro pipeline
 # #'
 # #' @maestroFrequency 1 day
-# #' @maestroStartTime 2024-05-24
+# #' @maestroStartTime 03:00:00
 # #' @maestroTz UTC
 # #' @maestroLogLevel INFO
 # 
@@ -57,7 +58,7 @@ writeLines(
 #' my_pipe maestro pipeline
 #'
 #' @maestroFrequency 1 day
-#' @maestroStartTime 2024-05-24
+#' @maestroStartTime 03:00:00
 #' @maestroTz UTC
 #' @maestroLogLevel INFO
 
@@ -76,7 +77,6 @@ my_pipe <- function() {
 #   pipe_name = "another_pipeline",
 #   pipeline_dir = "pipelines",
 #   frequency = "1 hour",
-#   start_time = "2024-05-17 15:00:00",
 #   tz = "America/Halifax",
 #   log_level = "ERROR"
 # )

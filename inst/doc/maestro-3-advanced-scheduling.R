@@ -28,7 +28,7 @@ writeLines(
   #' daily_example maestro pipeline
   #'
   #' @maestroFrequency 1 day
-  #' @maestroStartTime 2024-06-20 09:20:00
+  #' @maestroStartTime 09:20:00
   daily_example <- function() {
   
     # Pipeline code
@@ -43,7 +43,7 @@ writeLines(
 # #' daily_example maestro pipeline
 # #'
 # #' @maestroFrequency 1 day
-# #' @maestroStartTime 2024-06-20 09:20:00
+# #' @maestroStartTime 09:20:00
 # daily_example <- function() {
 # 
 #   # Pipeline code

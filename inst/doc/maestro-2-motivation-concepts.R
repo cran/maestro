@@ -8,8 +8,8 @@ knitr::opts_chunk$set(
 ## ----eval=FALSE---------------------------------------------------------------
 # #' my_pipe maestro pipeline
 # #'
-# #' @maestroFrequency 1 day
-# #' @maestroStartTime 2024-05-24
+# #' @maestroFrequency daily
+# #' @maestroStartTime 02:00:00
 # 
 # my_pipe <- function() {
 # 

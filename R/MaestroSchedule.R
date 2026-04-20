@@ -29,9 +29,8 @@ MaestroSchedule <- R6::R6Class(
         purrr::list_c()
       if (length(priorities) == 0) priorities <- list()
       pipeline_list <- pipeline_list[order(priorities)]
-      for (pipeline in pipeline_list) {
-        self$PipelineList$add_pipelines(pipeline)
-      }
+      self$PipelineList$MaestroPipelines <- pipeline_list
+      self$PipelineList$n_pipelines <- length(pipeline_list)
     },
 
     #' @description
@@ -59,6 +58,10 @@ MaestroSchedule <- R6::R6Class(
     run = function(..., quiet = FALSE, run_all = FALSE, n_show_next = 5) {
 
       dots <- rlang::list2(..., quiet = quiet)
+      check_datetime <- dots$check_datetime
+      if (is.null(check_datetime)) {
+        check_datetime <- lubridate::now()
+      }
 
       is_multicore <- FALSE
       cores <- dots$cores
@@ -94,7 +97,7 @@ MaestroSchedule <- R6::R6Class(
 
         if (!quiet) {
           cli::cli_h3(
-            "[{format(lubridate::now(), '%Y-%m-%d %H:%M:%S')}]
+            "[{format(check_datetime, '%Y-%m-%d %H:%M:%S')}]
         Running pipelines {cli::col_green(cli::symbol$play)}")
         }
 
@@ -102,10 +105,11 @@ MaestroSchedule <- R6::R6Class(
         pipes_that_ran <- do.call(pipes_to_run$run, dots)
         if (is_multicore) self$PipelineList$update_pipelines(pipes_that_ran)
         elapsed <- tictoc::toc(quiet = TRUE)
+        elapsed_ms <- elapsed$toc - elapsed$tic
 
         if (!quiet) {
           cli::cli_h3(
-            "[{format(lubridate::now(), '%Y-%m-%d %H:%M:%S')}]
+            "[{format(check_datetime + lubridate::milliseconds(elapsed_ms), '%Y-%m-%d %H:%M:%S')}]
             Pipeline execution completed {cli::col_silver(cli::symbol$stop)} | {elapsed$callback_msg}"
           )
         }
@@ -229,6 +233,12 @@ MaestroSchedule <- R6::R6Class(
     #' @return interactive visualization
     show_network = function() {
 
+      lifecycle::deprecate_warn(
+        "1.1.0",
+        "MaestroSchedule$show_network()",
+        details = "It will be removed entirely in 1.2.0."
+      )
+
       pipe_names <- self$PipelineList$get_pipe_names()
 
       if (length(pipe_names) == 0) cli::cli_abort("No pipelines in schedule.", call = NULL)
@@ -261,39 +271,53 @@ MaestroSchedule <- R6::R6Class(
     #' @param max_datetime optional maximum datetime
     #' @param include_only_primary only primary pipelines are included 
     #'   (this are pipelines that are scheduled and not downstream nodes in a DAG)
+    #' @param include_skipped whether to include pipelines tagged with `@maestroSkip`
+    #'   (default `TRUE` for backwards compatibility)
     #' @return data.frame
-    get_run_sequence = function(n = NULL, min_datetime = NULL, max_datetime = NULL, include_only_primary = FALSE) {
-      run_sequence <- self$PipelineList$get_run_sequences(n = n, min_datetime = min_datetime, max_datetime = max_datetime) |> 
+    get_run_sequence = function(n = NULL, min_datetime = NULL, max_datetime = NULL, include_only_primary = FALSE, include_skipped = TRUE) {
+
+      pipeline_list <- self$PipelineList$MaestroPipelines
+
+      if (!include_skipped) {
+        pipeline_list <- purrr::discard(pipeline_list, ~isTRUE(.x$get_schedule()$skip))
+      }
+
+      run_sequence <- purrr::map(pipeline_list, ~.x$get_run_sequence(n = n, min_datetime = min_datetime, max_datetime = max_datetime)) |>
+        stats::setNames(purrr::map_chr(pipeline_list, ~.x$get_schedule()$pipe_name)) |>
+        purrr::discard(is.null) |>
         purrr::imap(
           ~dplyr::tibble(
             pipe_name = .y,
             scheduled_time = .x
           )
-        ) |> 
-        purrr::list_rbind() |> 
+        ) |>
+        purrr::list_rbind() |>
         dplyr::filter(!is.na(scheduled_time))
 
-      if (!include_only_primary) {
-        network <- self$get_network()
+      network <- self$get_network()
+      network$root <- find_roots(network$from, network$to)
 
-        network$root <- find_roots(network$from, network$to)
-        
+      # Primary = not a downstream DAG node
+      downstream_nodes <- network$to
+
+      if (!include_only_primary) {
         run_sequence_dags <- NULL
         if (nrow(network) > 0) {
           run_sequence_dags <- purrr::map2(network$to, network$root, ~{
-            run_sequence |> 
-              dplyr::filter(pipe_name == .y) |> 
+            run_sequence |>
+              dplyr::filter(pipe_name == .y) |>
               dplyr::mutate(pipe_name = .x)
-          }) |> 
+          }) |>
             purrr::list_rbind()
         }
 
-        run_sequence <- run_sequence |> 
-          dplyr::bind_rows(run_sequence_dags) |> 
+        run_sequence <- run_sequence |>
+          dplyr::bind_rows(run_sequence_dags) |>
           dplyr::arrange(scheduled_time)
       }
 
-      run_sequence
+      run_sequence |>
+        dplyr::mutate(is_primary = !pipe_name %in% downstream_nodes)
     }
   ),
 

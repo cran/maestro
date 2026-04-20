@@ -2,13 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.25">
+<meta name="generator" content="quarto-1.9.36">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
 <title>Advanced Scheduling</title>
 <style>
+
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -229,7 +230,7 @@ text-decoration: underline; }
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; daily_example maestro pipeline</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39;</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency 1 day</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroStartTime 2024-06-20 09:20:00</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroStartTime 09:20:00</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>daily_example <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Pipeline code</span></span>
@@ -251,12 +252,12 @@ text-decoration: underline; }
 <div class="asciicast" style="color: #172431;font-family: &#39;Fira Code&#39;,Monaco,Consolas,Menlo,&#39;Bitstream Vera Sans Mono&#39;,&#39;Powerline Symbols&#39;,monospace;line-height: 1.300000">
 <pre><span style="color: #2AA198;">ℹ</span> 1 script successfully parsed                                                  
                                                                                 
-── [2026-02-18 10:16:54]                                                        
+── [2024-06-20 08:00:00]                                                        
 Running pipelines <span style="color: #859900;">▶</span>                                                             
-<span style="color: #859900;">✔</span> <span style="color: #268BD2;">daily_example</span> <span style="color: #b8b8b8;">[18ms]</span>                                                          
+<span style="color: #859900;">✔</span> <span style="color: #268BD2;">daily_example</span> <span style="color: #b8b8b8;">[22ms]</span>                                                          
                                                                                 
-── [2026-02-18 10:16:54]                                                        
-Pipeline execution completed <span style="color: #525252;">■</span> | 0.036 sec elapsed                              
+── [2024-06-20 08:00:00]                                                        
+Pipeline execution completed <span style="color: #525252;">■</span> | 0.042 sec elapsed                              
 <span style="color: #859900;">✔</span> 1 success | <span style="color: #D33682;">!</span> 0 warnings | <span style="color: #DC322F;">✖</span> 0 errors | <span style="color: #2AA198;">◼</span> 1 total                             
 ────────────────────────────────────────────────────────────────────────────────
                                                                                 
@@ -277,17 +278,17 @@ Pipe name | Next scheduled run
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 <div class="asciicast" style="color: #172431;font-family: &#39;Fira Code&#39;,Monaco,Consolas,Menlo,&#39;Bitstream Vera Sans Mono&#39;,&#39;Powerline Symbols&#39;,monospace;line-height: 1.300000">
 <pre>                                                                                
-── [2026-02-18 10:16:54]                                                        
+── [2024-06-20 08:00:00]                                                        
 Running pipelines <span style="color: #859900;">▶</span>                                                             
                                                                                 
-── [2026-02-18 10:16:54]                                                        
+── [2024-06-20 08:00:00]                                                        
 Pipeline execution completed <span style="color: #525252;">■</span> | 0 sec elapsed                                  
 <span style="color: #859900;">✔</span> 0 successes | <span style="color: #D33682;">!</span> 0 warnings | <span style="color: #DC322F;">✖</span> 0 errors | <span style="color: #2AA198;">◼</span> 0 total                           
 ────────────────────────────────────────────────────────────────────────────────
                                                                                 
 ── Next scheduled pipelines <span style="color: #2AA198;">❯</span>                                                   
 Pipe name | Next scheduled run                                                  
-• daily_example | 2024-06-20 09:15:00                                           
+• daily_example | 2024-06-21 09:15:00                                           
 </pre>
 </div>
 </div>
@@ -319,7 +320,6 @@ The takeaway message is that the timeliness of the pipeline depends on how frequ
 </div>
 <p>All three pipelines are hourly but they start on different 10-minute intervals. If we run the orchestrator at <code>1 hour</code> they’ll all execute at the same time. If it is important that they execute at different times, we should set it to <code>10 minutes</code>.</p>
 <p>So a good heuristic is to run it as often as the smallest interval of time difference between any pipeline. This is pretty good so long as we don’t run it so often that the pipelines can’t complete before the next execution time. We don’t recommend running the orchestrator more frequently than every 5 minutes unless you’re confident that your pipelines are fast to execute.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
-<p>Maestro has a function for determining the ideal orchestrator frequency based on the pipeline frequencies in the project called <code>suggest_orch_frequency()</code>. It looks for the shortest interval of time between any future pipeline executions and suggests that for the frequency.</p>
 <h2 id="irregular-schedules">Irregular Schedules</h2>
 <p>It is also possible to run pipelines on an irregular schedule by specifying hours, days of week, days of month, or months of the year:</p>
 <h3 id="hours-of-the-day">Hours of the day</h3>
