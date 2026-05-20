@@ -299,11 +299,30 @@ MaestroPipeline <- R6::R6Class(
       )
 
       results <- withCallingHandlers(
-        do.call(
-          pipe_name,
-          args = resources[names(args)],
-          envir = maestro_context
-        ),
+        {
+          # Identify args with no default value (i.e. required args)
+          required_args <- names(args)[sapply(args, function(x) identical(x, quote(expr = )))]
+          missing_args <- setdiff(required_args, names(resources))
+          if (length(missing_args) > 0) {
+            stop(
+              paste0(
+                "missing argument",
+                if (length(missing_args) > 1) "s" else "",
+                " ",
+                paste0("`", missing_args, "`", collapse = ", "),
+                " - pass via `resources = list(",
+                paste0(missing_args, " = ...", collapse = ", "),
+                ")`"
+              ),
+              call. = FALSE
+            )
+          }
+          do.call(
+            pipe_name,
+            args = resources[intersect(names(args), names(resources))],
+            envir = maestro_context
+          )
+        },
         error = private$error_handler(internal_run_id = internal_run_id),
         warning = private$warning_handler(internal_run_id = internal_run_id),
         message = private$message_handler(internal_run_id = internal_run_id)
@@ -464,11 +483,17 @@ MaestroPipeline <- R6::R6Class(
 
       is_scheduled_now <- !is.null(matched_slot) && .passes_filters(matched_slot)
 
+      next_seq_start <- if (!is.null(matched_slot) && identical(as.integer(matched_slot), as.integer(current_cycle))) {
+        current_cycle + .one_freq_step()
+      } else {
+        current_cycle
+      }
+
       next_seq <- get_pipeline_run_sequence(
         pipeline_n = private$frequency_n,
         pipeline_unit = private$frequency_unit,
-        pipeline_datetime = current_cycle + .one_freq_step(),
-        check_datetime = current_cycle + lubridate::days(.run_sequence_min_days_out(private$frequency_unit)),
+        pipeline_datetime = next_seq_start,
+        check_datetime = next_seq_start + lubridate::days(.run_sequence_min_days_out(private$frequency_unit)),
         pipeline_hours = private$hours,
         pipeline_days_of_week = private$days_of_week,
         pipeline_days_of_month = private$days_of_month,
