@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Advanced DAGs - Dynamic Fan-out and Collect</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Advanced DAGs - Dynamic Fan-out and
+Collect</h1>
+
+
+
+<p>More complex types of DAGs involve dynamically spawning new pipelines
+(dynamic fan-out) based on a list or vector and/or collecting inputs
+from multiple pipelines into a single pipeline.</p>
+<div id="dynamic-fan-out" class="section level2">
+<h2>Dynamic Fan-out</h2>
+<p>Sometimes an upstream pipeline returns a collection of values and you
+want to run a downstream pipeline <strong>once per element</strong> — a
+pattern called fan-out or scatter. Add <code>@maestroMap</code> to the
+downstream pipeline to enable this. An empty <code>@maestroMap</code>
+tag iterates over each element of the upstream return value
+directly.</p>
+<pre><code>get_letters
+  |-shout[1]
+  |-shout[2]
+  |-shout[3]</code></pre>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency daily</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>get_letters <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;c&quot;</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>}</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&#39; @maestroInputs get_letters</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&#39; @maestroMap</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>shout <span class="ot">&lt;-</span> <span class="cf">function</span>(.input) {</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>  <span class="fu">toupper</span>(.input)</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>}</span></code></pre></div>
+<p><code>shout</code> will execute three times — once for
+<code>&quot;a&quot;</code>, once for <code>&quot;b&quot;</code>, once for <code>&quot;c&quot;</code> —
+and the CLI output labels each branch with its iteration index in square
+brackets.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(maestro)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">build_schedule</span>(<span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="fu">run_schedule</span>(schedule, <span class="at">run_all =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="fu">get_artifacts</span>(schedule)</span></code></pre></div>
+<div class="asciicast" style="color: #172431;font-family: &#39;Fira Code&#39;,Monaco,Consolas,Menlo,&#39;Bitstream Vera Sans Mono&#39;,&#39;Powerline Symbols&#39;,monospace;line-height: 1.300000">
+<pre>
+                                                                                
+── [2026-07-02 12:11:11]                                                        
+Running pipelines <span style="color: #859900;">▶</span>                                                             
+<span style="color: #859900;">✔</span> <span style="color: #268BD2;">get_letters</span> <span style="color: #b8b8b8;">[11ms]</span>                                                            
+<span style="color: #859900;">✔</span> |-<span style="color: #268BD2;">shout[1]</span> <span style="color: #b8b8b8;">[12ms]</span>                                                             
+<span style="color: #859900;">✔</span> |-<span style="color: #268BD2;">shout[2]</span> <span style="color: #b8b8b8;">[11ms]</span>                                                             
+<span style="color: #859900;">✔</span> |-<span style="color: #268BD2;">shout[3]</span> <span style="color: #b8b8b8;">[5ms]</span>                                                              
+                                                                                
+── [2026-07-02 12:11:11]                                                        
+Pipeline execution completed <span style="color: #525252;">■</span> | 0.106 sec elapsed                              
+<span style="color: #859900;">✔</span> 4 successes | <span style="color: #D33682;">!</span> 0 warnings | <span style="color: #DC322F;">✖</span> 0 errors | <span style="color: #2AA198;">◼</span> 4 total                           
+────────────────────────────────────────────────────────────────────────────────
+                                                                                
+── Maestro Schedule with 2 pipelines:                                           
+• <span style="color: #859900;">Success</span>                                                                       
+$get_letters                                                                    
+[1] &quot;a&quot; &quot;b&quot; &quot;c&quot;                                                                 
+                                                                                
+$shout                                                                          
+$shout$uuP1Tj                                                                   
+[1] &quot;A&quot;                                                                         
+                                                                                
+$shout$yTKKHP                                                                   
+[1] &quot;B&quot;                                                                         
+                                                                                
+$shout$fjPLUt                                                                   
+[1] &quot;C&quot;                                                                         
+                                                                                
+                                                                                
+</pre>
+</div>
+<p>Note there is no <code>@maestroOutputs</code> equivalent for defining
+dynamic fan-out. Here, you must use <code>@maestroInputs</code> combined
+with <code>@maestroMap</code>.</p>
+<div id="iterating-over-a-field-of-a-list" class="section level3">
+<h3>Iterating over a field of a list</h3>
+<p>When the upstream pipeline returns a <strong>named list</strong>, use
+<code>@maestroMap</code> to select which field to scatter over. The full
+list remains available as <code>.input</code> inside each branch, so
+other fields are still accessible.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency daily</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>get_letters <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>    <span class="at">letter =</span> letters[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>],</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>    <span class="at">greeting =</span> <span class="st">&quot;hello&quot;</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  )</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>}</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&#39; @maestroInputs get_letters</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&#39; @maestroMap .input$letter</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>make_message <span class="ot">&lt;-</span> <span class="cf">function</span>(.input) {</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>  <span class="fu">paste</span>(.input<span class="sc">$</span>greeting, <span class="fu">toupper</span>(.input<span class="sc">$</span>letter))</span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>}</span></code></pre></div>
+<p><code>make_message</code> runs once per element of
+<code>letter</code>, producing <code>&quot;hello A&quot;</code>,
+<code>&quot;hello B&quot;</code>, <code>&quot;hello C&quot;</code>. The
+<code>greeting</code> field is available in every branch because the
+full list is passed as <code>.input</code> each time.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">library</span>(maestro)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">build_schedule</span>(<span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="fu">run_schedule</span>(schedule, <span class="at">run_all =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="fu">get_artifacts</span>(schedule)</span></code></pre></div>
+<div class="asciicast" style="color: #172431;font-family: &#39;Fira Code&#39;,Monaco,Consolas,Menlo,&#39;Bitstream Vera Sans Mono&#39;,&#39;Powerline Symbols&#39;,monospace;line-height: 1.300000">
+<pre>
+                                                                                
+── [2026-07-02 12:11:12]                                                        
+Running pipelines <span style="color: #859900;">▶</span>                                                             
+<span style="color: #859900;">✔</span> <span style="color: #268BD2;">get_letters</span> <span style="color: #b8b8b8;">[6ms]</span>                                                             
+<span style="color: #859900;">✔</span> |-<span style="color: #268BD2;">make_message[1]</span> <span style="color: #b8b8b8;">[5ms]</span>                                                       
+<span style="color: #859900;">✔</span> |-<span style="color: #268BD2;">make_message[2]</span> <span style="color: #b8b8b8;">[5ms]</span>                                                       
+<span style="color: #859900;">✔</span> |-<span style="color: #268BD2;">make_message[3]</span> <span style="color: #b8b8b8;">[5ms]</span>                                                       
+                                                                                
+── [2026-07-02 12:11:12]                                                        
+Pipeline execution completed <span style="color: #525252;">■</span> | 0.049 sec elapsed                              
+<span style="color: #859900;">✔</span> 4 successes | <span style="color: #D33682;">!</span> 0 warnings | <span style="color: #DC322F;">✖</span> 0 errors | <span style="color: #2AA198;">◼</span> 4 total                           
+────────────────────────────────────────────────────────────────────────────────
+                                                                                
+── Maestro Schedule with 2 pipelines:                                           
+• <span style="color: #859900;">Success</span>                                                                       
+$get_letters                                                                    
+$get_letters$letter                                                             
+[1] &quot;a&quot; &quot;b&quot; &quot;c&quot;                                                                 
+                                                                                
+$get_letters$greeting                                                           
+[1] &quot;hello&quot;                                                                     
+                                                                                
+                                                                                
+$make_message                                                                   
+$make_message$xFnbSr                                                            
+[1] &quot;hello A&quot;                                                                   
+                                                                                
+$make_message$NfwRfN                                                            
+[1] &quot;hello B&quot;                                                                   
+                                                                                
+$make_message$yVywTt                                                            
+[1] &quot;hello C&quot;                                                                   
+                                                                                
+                                                                                
+</pre>
+</div>
+<p>If the field name in <code>@maestroMap</code> does not exist in the
+upstream return value, maestro records an informative error on the
+downstream pipeline rather than silently producing zero branches.</p>
+</div>
+<div id="iterating-over-multiple-fields-simultaneously" class="section level3">
+<h3>Iterating over multiple fields simultaneously</h3>
+<p>You can supply multiple space-separated expressions to
+<code>@maestroMap</code> to zip across several fields at once — similar
+to <code>purrr::pmap()</code>. Each iteration receives
+<code>.input</code> with all specified fields replaced by their i-th
+element.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency daily</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>get_data <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>    <span class="at">letter =</span> letters[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>],</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>    <span class="at">greeting =</span> <span class="fu">c</span>(<span class="st">&quot;hello&quot;</span>, <span class="st">&quot;cheers&quot;</span>, <span class="st">&quot;hi&quot;</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  )</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>}</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&#39; @maestroInputs get_data</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&#39; @maestroMap .input$letter .input$greeting</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>make_message <span class="ot">&lt;-</span> <span class="cf">function</span>(.input) {</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>  <span class="fu">paste</span>(.input<span class="sc">$</span>greeting, <span class="fu">toupper</span>(.input<span class="sc">$</span>letter))</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>}</span></code></pre></div>
+<p>This produces <code>&quot;hello A&quot;</code>, <code>&quot;cheers B&quot;</code>,
+<code>&quot;hi C&quot;</code> — each branch receives a distinct
+<code>(letter, greeting)</code> pair.</p>
+<p>All vectors must be the same length, or length 1 (in which case the
+scalar is recycled across all iterations). Mismatched lengths produce a
+pipeline error.</p>
+</div>
+</div>
+<div id="fan-in-collect" class="section level2">
+<h2>Fan-in (Collect)</h2>
+<p>Fan-in is the complement of fan-out: multiple upstream pipelines are
+gathered into a single downstream pipeline. Wrap one or more upstream
+names with <code>collect()</code> in <code>@maestroInputs</code> to
+enable this.</p>
+<pre><code>letter_a ─┐
+           |-+combine
+letter_b ─┘</code></pre>
+<p>The downstream pipeline receives a named list as <code>.input</code>,
+where each name corresponds to an upstream pipeline and each value is
+that pipeline’s return value.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency daily</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>letter_a <span class="ot">&lt;-</span> <span class="cf">function</span>() <span class="st">&quot;a&quot;</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency daily</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>letter_b <span class="ot">&lt;-</span> <span class="cf">function</span>() <span class="st">&quot;b&quot;</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&#39; @maestroInputs collect(letter_a, letter_b)</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>combine <span class="ot">&lt;-</span> <span class="cf">function</span>(.input) {</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  <span class="fu">paste0</span>(.input<span class="sc">$</span>letter_a, .input<span class="sc">$</span>letter_b)</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>}</span></code></pre></div>
+<p><code>combine</code> fires only after both <code>letter_a</code> and
+<code>letter_b</code> have succeeded. Inside <code>combine</code>,
+<code>.input$letter_a</code> is <code>&quot;a&quot;</code> and
+<code>.input$letter_b</code> is <code>&quot;b&quot;</code>. Collect pipelines are
+shown with a <code>|-+</code> prefix in the CLI to distinguish them from
+regular downstream pipelines.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">library</span>(maestro)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">build_schedule</span>(<span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="fu">run_schedule</span>(schedule, <span class="at">run_all =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="fu">get_status</span>(schedule)[, <span class="fu">c</span>(<span class="st">&quot;pipe_name&quot;</span>, <span class="st">&quot;invoked&quot;</span>, <span class="st">&quot;success&quot;</span>, <span class="st">&quot;input_run_id&quot;</span>, <span class="st">&quot;lineage&quot;</span>)]</span></code></pre></div>
+<div class="asciicast" style="color: #172431;font-family: &#39;Fira Code&#39;,Monaco,Consolas,Menlo,&#39;Bitstream Vera Sans Mono&#39;,&#39;Powerline Symbols&#39;,monospace;line-height: 1.300000">
+<pre>
+                                                                                
+── [2026-07-02 12:11:12]                                                        
+Running pipelines <span style="color: #859900;">▶</span>                                                             
+<span style="color: #859900;">✔</span> <span style="color: #268BD2;">letter_a</span> <span style="color: #b8b8b8;">[8ms]</span>                                                                
+<span style="color: #859900;">✔</span> <span style="color: #268BD2;">letter_b</span> <span style="color: #b8b8b8;">[5ms]</span>                                                                
+<span style="color: #859900;">✔</span> |-+<span style="color: #268BD2;">combine</span> <span style="color: #b8b8b8;">[7ms]</span>                                                              
+                                                                                
+── [2026-07-02 12:11:12]                                                        
+Pipeline execution completed <span style="color: #525252;">■</span> | 0.045 sec elapsed                              
+<span style="color: #859900;">✔</span> 3 successes | <span style="color: #D33682;">!</span> 0 warnings | <span style="color: #DC322F;">✖</span> 0 errors | <span style="color: #2AA198;">◼</span> 3 total                           
+────────────────────────────────────────────────────────────────────────────────
+                                                                                
+── Maestro Schedule with 3 pipelines:                                           
+• <span style="color: #859900;">Success</span>                                                                       
+<span style="color: #999999;"># A tibble: 3 × 5</span>                                                               
+  pipe_name invoked success input_run_id   lineage                              
+  <span style="font-style: italic;color: #999999;">&lt;chr&gt;</span>     <span style="font-style: italic;color: #999999;">&lt;lgl&gt;</span>   <span style="font-style: italic;color: #999999;">&lt;lgl&gt;</span>   <span style="font-style: italic;color: #999999;">&lt;chr&gt;</span>          <span style="font-style: italic;color: #999999;">&lt;chr&gt;</span>                                
+<span style="color: #c2c2c2;">1</span> letter_a  TRUE    TRUE    <span style="color: #DC322F;">NA</span>             letter_a                             
+<span style="color: #c2c2c2;">2</span> letter_b  TRUE    TRUE    <span style="color: #DC322F;">NA</span>             letter_b                             
+<span style="color: #c2c2c2;">3</span> combine   TRUE    TRUE    BRVGSu, s1XzVQ letter_a&amp;letter_b-&gt;combine           
+</pre>
+</div>
+<p>If any upstream pipeline fails, the collect pipeline will not fire.
+The failed pipeline’s run ID is also excluded from
+<code>input_run_id</code> in <code>get_status()</code>.</p>
+<div id="fan-out-into-fan-in" class="section level3">
+<h3>Fan-out into Fan-in</h3>
+<p><code>@maestroMap</code> and <code>collect()</code> compose
+naturally. An upstream pipeline can fan out with
+<code>@maestroMap</code>, and a downstream pipeline can gather all
+successful iterations back together with <code>collect()</code>. Note
+that in the dynamic fan-out to fan-in case, the downstream pipeline will
+run if at least one upstream iteration has succeeded.</p>
+<pre><code>numbers
+  |-multiply[1] ─┐
+  |-multiply[2] ──|-+add
+  |-multiply[3] ─┘</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency daily</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>numbers <span class="ot">&lt;-</span> <span class="cf">function</span>() <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co">#&#39; @maestroInputs numbers</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="co">#&#39; @maestroMap</span></span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>multiply <span class="ot">&lt;-</span> <span class="cf">function</span>(.input) .input <span class="sc">*</span> <span class="dv">3</span></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="co">#&#39; @maestroInputs collect(multiply)</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>add <span class="ot">&lt;-</span> <span class="cf">function</span>(.input) {</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>  <span class="fu">sum</span>(<span class="fu">unlist</span>(.input))</span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>}</span></code></pre></div>
+<p>Here <code>multiply</code> executes three times (once per element of
+<code>1:3</code>), then <code>add</code> collects all three results and
+sums them. The <code>.input</code> received by <code>add</code> is a
+list of the successful iteration return values.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">library</span>(maestro)</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">build_schedule</span>(<span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="fu">run_schedule</span>(schedule, <span class="at">run_all =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="fu">get_artifacts</span>(schedule)<span class="sc">$</span>add</span></code></pre></div>
+<div class="asciicast" style="color: #172431;font-family: &#39;Fira Code&#39;,Monaco,Consolas,Menlo,&#39;Bitstream Vera Sans Mono&#39;,&#39;Powerline Symbols&#39;,monospace;line-height: 1.300000">
+<pre>
+                                                                                
+── [2026-07-02 12:11:13]                                                        
+Running pipelines <span style="color: #859900;">▶</span>                                                             
+<span style="color: #859900;">✔</span> <span style="color: #268BD2;">numbers</span> <span style="color: #b8b8b8;">[6ms]</span>                                                                 
+<span style="color: #859900;">✔</span> |-<span style="color: #268BD2;">multiply[1]</span> <span style="color: #b8b8b8;">[24ms]</span>                                                          
+<span style="color: #859900;">✔</span> |-<span style="color: #268BD2;">multiply[2]</span> <span style="color: #b8b8b8;">[5ms]</span>                                                           
+<span style="color: #859900;">✔</span> |-<span style="color: #268BD2;">multiply[3]</span> <span style="color: #b8b8b8;">[5ms]</span>                                                           
+<span style="color: #859900;">✔</span>   |-+<span style="color: #268BD2;">add</span> <span style="color: #b8b8b8;">[5ms]</span>                                                                
+                                                                                
+── [2026-07-02 12:11:13]                                                        
+Pipeline execution completed <span style="color: #525252;">■</span> | 0.079 sec elapsed                              
+<span style="color: #859900;">✔</span> 5 successes | <span style="color: #D33682;">!</span> 0 warnings | <span style="color: #DC322F;">✖</span> 0 errors | <span style="color: #2AA198;">◼</span> 5 total                           
+────────────────────────────────────────────────────────────────────────────────
+                                                                                
+── Maestro Schedule with 3 pipelines:                                           
+• <span style="color: #859900;">Success</span>                                                                       
+[1] 18                                                                          
+</pre>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

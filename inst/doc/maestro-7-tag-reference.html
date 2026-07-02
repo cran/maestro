@@ -222,6 +222,7 @@ text-decoration: underline; }
   <li><a href="#maestrotz" id="toc-maestrotz">maestroTz</a></li>
   <li><a href="#maestrologlevel" id="toc-maestrologlevel">maestroLogLevel</a></li>
   <li><a href="#maestroflags" id="toc-maestroflags">maestroFlags</a></li>
+  <li><a href="#maestrolabel" id="toc-maestrolabel">maestroLabel</a></li>
   </ul></li>
   <li><a href="#specifier-tags" id="toc-specifier-tags">Specifier Tags</a>
   <ul>
@@ -232,6 +233,7 @@ text-decoration: underline; }
   <li><a href="#dag-tags" id="toc-dag-tags">DAG Tags</a>
   <ul>
   <li><a href="#maestroinputs" id="toc-maestroinputs">maestroInputs</a></li>
+  <li><a href="#maestromap" id="toc-maestromap">maestroMap</a></li>
   <li><a href="#maestrooutputs" id="toc-maestrooutputs">maestroOutputs</a></li>
   </ul></li>
   <li><a href="#advanced-tags" id="toc-advanced-tags">Advanced Tags</a>
@@ -303,12 +305,20 @@ text-decoration: underline; }
 <li><p><code>#&#39; @maestroLogLevel WARN</code></p></li>
 </ul>
 <h2 id="maestroflags">maestroFlags</h2>
-<p>Arbitrary labeling tags which are then made accessible via <code>get_flags()</code>. A pipeline can have multiple tags separated by spaces.</p>
+<p>Arbitrary strings which are then made accessible via <code>get_flags()</code>. A pipeline can have multiple flags separated by spaces.</p>
 <p>Default:</p>
 <p>Examples</p>
 <ul>
 <li><p><code>#&#39; @maestroFlags critical aviation</code></p></li>
 <li><p><code>#&#39; @maestroFlags time-series</code></p></li>
+</ul>
+<h2 id="maestrolabel">maestroLabel</h2>
+<p>Key-value pairs used for attributing metadata for a pipeline. Multiple labels can be assigned to a pipeline using multiple instances of <code>@maestroLabel</code>. These labels can be extracted as a data.frame using <code>get_labels()</code>. Each label must follow the pattern of <code>key</code> <code>value</code>.</p>
+<p>Default:</p>
+<p>Examples:</p>
+<ul>
+<li><p><code>#&#39; @maestroLabel domain transportation</code></p></li>
+<li><p><code>#&#39; @maestroLabel author will.hipson</code></p></li>
 </ul>
 <hr>
 <h1 id="specifier-tags">Specifier Tags</h1>
@@ -340,11 +350,27 @@ text-decoration: underline; }
 <h1 id="dag-tags">DAG Tags</h1>
 <h2 id="maestroinputs">maestroInputs</h2>
 <p>For a DAG style pipeline, the names of pipelines that input into the pipeline. These names must match the function name defining the inputting pipeline. Multiple pipelines can be used as inputs and the input value is used in the target pipeline via the required <code>.input</code> parameter. Note that this tag could be redundant if the inputting pipeline uses <code>maestroOutputs</code>.</p>
+<p>To enable <strong>fan-in (collect)</strong>, wrap one or more input names with <code>collect()</code>. The downstream pipeline receives a named list as <code>.input</code>, where each name corresponds to an upstream pipeline and each value is that pipeline’s return value. All listed upstream pipelines must have succeeded before the collect pipeline fires. Works with both static multi-source inputs and dynamic fan-out followed by fan-in (<code>@maestroMap</code> → <code>collect()</code>): in the latter case <code>.input</code> is a list of all successful iteration results.</p>
 <p>Default:</p>
 <p>Examples:</p>
 <ul>
-<li><code>#&#39; @maestroInputs extract verify</code></li>
+<li><p><code>#&#39; @maestroInputs extract verify</code></p></li>
+<li><p><code>#&#39; @maestroInputs collect(letter_a, letter_b)</code></p></li>
+<li><p><code>#&#39; @maestroInputs collect(multiply)</code> <em>(collect all iterations of a <code>@maestroMap</code> upstream)</em></p></li>
 </ul>
+<h2 id="maestromap">maestroMap</h2>
+<p>Enables <strong>dynamic fan-out (scatter)</strong>: the downstream pipeline executes once per element of the upstream return value. When the tag value is empty, each element of the upstream return value is passed directly as <code>.input</code>. When one or more R expressions referencing <code>.input</code> fields are provided (space-separated), those fields are scattered over and zipped together <code>pmap</code>-style: each iteration receives <code>.input</code> with all specified fields replaced by their i-th element. The full list remains accessible as <code>.input</code> in every branch.</p>
+<p>All vectors must be the same length, unless a vector has length 1, in which case it is recycled across all iterations. Mismatched lengths produce a pipeline error.</p>
+<p>Requires <code>@maestroInputs</code> to reference an upstream pipeline.</p>
+<p>Default:</p>
+<p>Examples:</p>
+<ul>
+<li><p><code>#&#39; @maestroMap</code> <em>(iterate over each element of the upstream return value)</em></p></li>
+<li><p><code>#&#39; @maestroMap .input$letter</code></p></li>
+<li><p><code>#&#39; @maestroMap .input$ids .input$labels</code></p></li>
+<li><p><code>#&#39; @maestroMap .input$model .input$label .input$threshold</code></p></li>
+</ul>
+<hr>
 <h2 id="maestrooutputs">maestroOutputs</h2>
 <p>For a DAG style pipeline, the names of pipelines that receive the return value of this pipeline as input. These names must match the function name defining the outputting pipeline. Multiple pipelines can be outputted into. The return value of the pipeline will be passed into the receiving pipeline. Note that this tag could be redundant if pipeline to be inputted into uses <code>maestroInputs</code>.</p>
 <p>Default:</p>

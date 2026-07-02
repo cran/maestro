@@ -59,7 +59,6 @@ writeLines(
 ## ----eval=FALSE---------------------------------------------------------------
 # #' Example ETL pipeline
 # #' @maestroFrequency 1 day
-# #' @maestroStartTime 2024-03-25 12:30:00
 # my_etl <- function() {
 # 
 #   # Pretend we're getting data from a source
@@ -82,7 +81,6 @@ invisible(dir.create("pipelines"))
 writeLines(
   "
   #' @maestroFrequency 1 day
-  #' @maestroStartTime 2024-03-25 12:30:00
   #' @maestroOutputs transform
   extract <- function() {
     # Imagine this is something way more complicated, like a database call
@@ -104,7 +102,6 @@ writeLines(
 
 ## ----eval=FALSE---------------------------------------------------------------
 # #' @maestroFrequency 1 day
-# #' @maestroStartTime 2024-03-25 12:30:00
 # #' @maestroOutputs transform
 # extract <- function() {
 #   # Imagine this is something way more complicated, like a database call
