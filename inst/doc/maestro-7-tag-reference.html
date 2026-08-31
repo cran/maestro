@@ -220,9 +220,13 @@ text-decoration: underline; }
   <li><a href="#maestrofrequency" id="toc-maestrofrequency">maestroFrequency</a></li>
   <li><a href="#maestrostarttime" id="toc-maestrostarttime">maestroStartTime</a></li>
   <li><a href="#maestrotz" id="toc-maestrotz">maestroTz</a></li>
+  </ul></li>
+  <li><a href="#metadata-tags" id="toc-metadata-tags">Metadata Tags</a>
+  <ul>
   <li><a href="#maestrologlevel" id="toc-maestrologlevel">maestroLogLevel</a></li>
   <li><a href="#maestroflags" id="toc-maestroflags">maestroFlags</a></li>
   <li><a href="#maestrolabel" id="toc-maestrolabel">maestroLabel</a></li>
+  <li><a href="#maestrocascadetags" id="toc-maestrocascadetags">maestroCascadeTags</a></li>
   </ul></li>
   <li><a href="#specifier-tags" id="toc-specifier-tags">Specifier Tags</a>
   <ul>
@@ -296,6 +300,8 @@ text-decoration: underline; }
 <li><p><code>#&#39; @maestroTz America/Halifax</code></p></li>
 <li><p><code>#&#39; @maestroTz US/Pacific</code></p></li>
 </ul>
+<hr>
+<h1 id="metadata-tags">Metadata Tags</h1>
 <h2 id="maestrologlevel">maestroLogLevel</h2>
 <p>Minimum logging threshold for messages, warnings, and errors that come from the pipeline. These levels correspond to those in <code>logger:::log_levels_supported</code> but most commonly used are ERROR, WARN, INFO. For example, if you use <code>WARN</code> then any messages of lower urgency (i.e., INFO) will be suppressed, but errors will be logged.</p>
 <p>Default: <code>INFO</code></p>
@@ -319,6 +325,24 @@ text-decoration: underline; }
 <ul>
 <li><p><code>#&#39; @maestroLabel domain transportation</code></p></li>
 <li><p><code>#&#39; @maestroLabel author will.hipson</code></p></li>
+</ul>
+<h2 id="maestrocascadetags">maestroCascadeTags</h2>
+<p>Propagates selected metadata tags from the annotated pipeline to <strong>all of its downstream pipelines</strong> in the DAG, transitively (i.e., to every descendant, not just direct children).</p>
+<p>The tag value is a space-separated list of tag types to cascade. Accepted values are <code>label</code>, <code>flags</code>, and <code>loglevel</code> (case-insensitive). If the tag is used with no value (<code>@maestroCascadeTags</code> alone), all three tag types are cascaded.</p>
+<p>When multiple ancestors each declare <code>@maestroCascadeTags</code>, they are applied in topological order (root → leaves), so the nearest ancestor wins on conflict.</p>
+<p><strong>Merge / conflict rules by tag type:</strong></p>
+<ul>
+<li><strong><code>label</code></strong> — Cascaded labels are added only for keys not already defined on the downstream pipeline locally (local wins). For keys not locally defined, a closer ancestor’s value overrides a farther ancestor’s.</li>
+<li><strong><code>flags</code></strong> — Union: cascaded flags not already present are appended.</li>
+<li><strong><code>loglevel</code></strong> — Local wins. The cascade only applies if the downstream pipeline’s own log level is <code>&quot;INFO&quot;</code> (the default, treated as “not explicitly set”). A downstream that explicitly sets any other level keeps it. Cascading <code>INFO</code> is always a no-op.</li>
+</ul>
+<p>Default: (no cascade)</p>
+<p>Examples:</p>
+<ul>
+<li><p><code>#&#39; @maestroCascadeTags label</code> <em>(cascade labels only)</em></p></li>
+<li><p><code>#&#39; @maestroCascadeTags label flags</code> <em>(cascade labels and flags)</em></p></li>
+<li><p><code>#&#39; @maestroCascadeTags</code> <em>(cascade all three tag types)</em></p></li>
+<li><p><code>#&#39; @maestroCascadeTags LOGLEVEL</code> <em>(case-insensitive)</em></p></li>
 </ul>
 <hr>
 <h1 id="specifier-tags">Specifier Tags</h1>
