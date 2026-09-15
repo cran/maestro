@@ -119,7 +119,7 @@ data.frame(
 ## ----eval=FALSE---------------------------------------------------------------
 # #' specific_months maestro pipeline
 # #'
-# #' @maestroFrequency months
+# #' @maestroFrequency monthly
 # #' @maestroMonths 1 7 10
 # some_months <- function() {
 # 

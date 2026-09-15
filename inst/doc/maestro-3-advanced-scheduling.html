@@ -212,7 +212,7 @@ text-decoration: underline; }
 </header>
 
 
-<p>This vignette covers more advanced concepts and examples related to scheduling. At it’s core, maestro adheres to two keys principles:</p>
+<p>This vignette covers more advanced concepts and examples related to scheduling. At its core, maestro adheres to two key principles:</p>
 <ol type="1">
 <li>Stateless: It does not need to be continuously running - it can be run in a serverless architecture</li>
 <li>Use of <em>rounded scheduling</em>: The timeliness of pipeline executions depends on how often you run your orchestrator</li>
@@ -257,7 +257,7 @@ Running pipelines <span style="color: #859900;">▶</span>
 <span style="color: #859900;">✔</span> <span style="color: #268BD2;">daily_example</span> <span style="color: #b8b8b8;">[19ms]</span>                                                          
                                                                                 
 ── [2024-06-20 08:00:00]                                                        
-Pipeline execution completed <span style="color: #525252;">■</span> | 0.027 sec elapsed                              
+Pipeline execution completed <span style="color: #525252;">■</span> | 0.025 sec elapsed                              
 <span style="color: #859900;">✔</span> 1 success | <span style="color: #D33682;">!</span> 0 warnings | <span style="color: #DC322F;">✖</span> 0 errors | <span style="color: #2AA198;">◼</span> 1 total                             
 ────────────────────────────────────────────────────────────────────────────────
                                                                                 
@@ -360,7 +360,7 @@ The takeaway message is that the timeliness of the pipeline depends on how frequ
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; specific_months maestro pipeline</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39;</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency months</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency monthly</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroMonths 1 7 10</span></span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>some_months <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>

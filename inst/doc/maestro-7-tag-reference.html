@@ -313,7 +313,7 @@ text-decoration: underline; }
 <h2 id="maestroflags">maestroFlags</h2>
 <p>Arbitrary strings which are then made accessible via <code>get_flags()</code>. A pipeline can have multiple flags separated by spaces.</p>
 <p>Default:</p>
-<p>Examples</p>
+<p>Examples:</p>
 <ul>
 <li><p><code>#&#39; @maestroFlags critical aviation</code></p></li>
 <li><p><code>#&#39; @maestroFlags time-series</code></p></li>
@@ -363,7 +363,7 @@ text-decoration: underline; }
 <li><p><code>#&#39; @maestroDays Mon Tue Wed Thu Fri</code></p></li>
 </ul>
 <h2 id="maestromonths">maestroMonths</h2>
-<p>Specific months of the year on which to run the pipeline. This only applies for pipelines that do run at least monthly. Acceptable values are integers (1-12) corresponding to the month of the year (e.g., 1 = January, 2 = February, etc.).</p>
+<p>Specific months of the year on which to run the pipeline. This only applies for pipelines that run at least monthly. Acceptable values are integers (1-12) corresponding to the month of the year (e.g., 1 = January, 2 = February, etc.).</p>
 <p>Default:</p>
 <p>Examples:</p>
 <ul>
@@ -420,9 +420,9 @@ text-decoration: underline; }
 <li><code>#&#39; @maestroPriority 3</code></li>
 </ul>
 <h2 id="maestrorunif">maestroRunIf</h2>
-<p>Sets the pipeline to be conditional based on a TRUE/FALSE value returned from an R expression. R code following the tag must evaluate to a single TRUE or FALSE, where TRUE causes the pipeline to run (assuming it meets scheduling criteria). If the pipeline is part of a DAG it can use the upstream return value as .input. Variables passed through the <code>resources</code> argument of <code>run_schedule()</code> are also accessible in expression following the tag.</p>
+<p>Sets the pipeline to be conditional based on a TRUE/FALSE value returned from an R expression. R code following the tag must evaluate to a single TRUE or FALSE, where TRUE causes the pipeline to run (assuming it meets scheduling criteria). If the pipeline is part of a DAG it can use the upstream return value as .input. Variables passed through the <code>resources</code> argument of <code>run_schedule()</code> are also accessible in the expression following the tag.</p>
 <p>Default:</p>
-<p>Examples</p>
+<p>Examples:</p>
 <ul>
 <li><code>#&#39; @maestroRunIf sample(c(TRUE, FALSE), 1)</code></li>
 <li><pre><code>#&#39; @maestroRunIf

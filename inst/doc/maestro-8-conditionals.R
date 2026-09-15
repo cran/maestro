@@ -75,7 +75,7 @@ writeLines(
 # #' is.data.frame(.input) && nrow(.input) > 0
 # load_flights <- function(.input) {
 # 
-#   write.csv("flights.csv")
+#   write.csv(.input, "flights.csv")
 # }
 
 ## ----echo=FALSE, warning=FALSE, message=FALSE---------------------------------
@@ -118,7 +118,7 @@ writeLines(
   #' is.data.frame(.input) && nrow(.input) > 0
   load_flights <- function(.input) {
 
-    write.csv('flights.csv')
+    write.csv(.input, 'flights.csv')
   }
   ",
   con = "pipelines/conditional2.R"
