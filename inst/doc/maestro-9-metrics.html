@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Custom Pipeline Metrics</title>
+<style>
+
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+width: 0.8em;
+margin: 0 0.8em 0.2em -1em;  vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+}
+pre.numberSource { margin-left: 3em; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+</style>
+</head>
+
+<body>
+
+
+<header id="title-block-header">
+<h1 class="title">Custom Pipeline Metrics</h1>
+
+</header>
+
+
+<p>Pipeline metrics are numeric values that track the performance of executed pipelines. Any value that can be represented as a single number can be a metric, but typical metrics are things like the number of rows of a data.frame processed, data volume in bytes, number of API calls, or number of attempts made on a task. Metrics are recorded without being part of the pipeline’s return value, so they never get passed downstream in a <a href="maestro-4-directed-acyclic-graphs.html">DAG</a>.</p>
+<p>Other common metrics like execution time and success/fail are already tracked by the orchestrator and are available via <code>get_status()</code> and <code>get_schedule()</code>, so there’s no need to record those yourself.</p>
+<h2 id="recording-metrics">Recording Metrics</h2>
+<p>Custom metrics are recorded using the <code>update_metric()</code> function. It is called from within a pipeline function and takes the name of the metric and a numeric value (a single, non-missing number). Maestro automatically attributes the metric to the pipeline (and run) that is currently executing.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; ./pipelines/metric_example.R</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency 1 hour</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>extract_flights <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Pretends to fetch data from an API</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">flight_id =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">airline_code =</span> <span class="fu">c</span>(<span class="st">&quot;UA&quot;</span>, <span class="st">&quot;AC&quot;</span>, <span class="st">&quot;AC&quot;</span>, <span class="st">&quot;AA&quot;</span>, <span class="st">&quot;DE&quot;</span>),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">departure_time =</span> <span class="fu">as.POSIXct</span>(<span class="st">&quot;2026-10-14 12:00:00&quot;</span>) <span class="sc">+</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">450</span>, <span class="dv">750</span>, <span class="dv">1450</span>, <span class="dv">1750</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">update_metric</span>(<span class="st">&quot;rows_read&quot;</span>, <span class="fu">nrow</span>(df))</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">update_metric</span>(<span class="st">&quot;bytes_read&quot;</span>, <span class="fu">as.numeric</span>(<span class="fu">object.size</span>(df)))</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  df</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroInputs extract_flights</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>load_flights <span class="ot">&lt;-</span> <span class="cf">function</span>(.input) {</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write.csv</span>(.input, <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.csv&quot;</span>))</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">update_metric</span>(<span class="st">&quot;rows_written&quot;</span>, <span class="fu">nrow</span>(.input))</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<p>After running the schedule, <code>get_metrics()</code> returns a long data.frame (tibble) of every metric recorded: the pipeline it came from (<code>pipe_name</code>), the run it was recorded in (<code>run_id</code>), the <code>metric</code> name, and its numeric <code>value</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(maestro)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">build_schedule</span>(<span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>status <span class="ot">&lt;-</span> <span class="fu">run_schedule</span>(</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  schedule,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">orch_frequency =</span> <span class="st">&quot;1 hour&quot;</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">quiet =</span> <span class="cn">TRUE</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">get_metrics</span>(schedule)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 4
+  pipe_name       run_id metric       value
+  &lt;chr&gt;           &lt;chr&gt;  &lt;chr&gt;        &lt;dbl&gt;
+1 extract_flights LjN5Zs rows_read        5
+2 extract_flights LjN5Zs bytes_read    1648
+3 load_flights    FihN58 rows_written     5</code></pre>
+</div>
+</div>
+<p>Note that each pipeline gets its own <code>run_id</code>, even within a DAG. Since the result is a data.frame, it’s straightforward to summarise further or write out to a database or file.</p>
+<div>
+<blockquote>
+<p><strong>Note</strong></p>
+<p>Metrics are only recorded when a pipeline is executed by <code>run_schedule()</code>. Calling <code>update_metric()</code> while developing or testing a pipeline function interactively is harmless: it emits an informational message and does nothing.</p>
+</blockquote>
+</div>
+<h2 id="metrics-are-per-execution">Metrics Are Per Execution</h2>
+<p>Metrics belong to a single execution of a pipeline. Each time a pipeline runs it gets a new <code>run_id</code>, and its metrics are stored separately from those of earlier runs. Within one execution, calling <code>update_metric()</code> again with the same name overwrites the earlier value (the last write wins).</p>
+<p>Running the same schedule a second time shows this. The metrics from both runs are retained and distinguished by <code>run_id</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>status <span class="ot">&lt;-</span> <span class="fu">run_schedule</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  schedule,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">orch_frequency =</span> <span class="st">&quot;1 hour&quot;</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">quiet =</span> <span class="cn">TRUE</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="fu">get_metrics</span>(schedule)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 4
+  pipe_name       run_id metric       value
+  &lt;chr&gt;           &lt;chr&gt;  &lt;chr&gt;        &lt;dbl&gt;
+1 extract_flights LjN5Zs rows_read        5
+2 extract_flights LjN5Zs bytes_read    1648
+3 extract_flights G6pYC8 rows_read        5
+4 extract_flights G6pYC8 bytes_read    1648
+5 load_flights    FihN58 rows_written     5
+6 load_flights    mUpGEN rows_written     5</code></pre>
+</div>
+</div>
+<h2 id="accumulating-with-increment-true">Accumulating with <code>increment = TRUE</code></h2>
+<p>Sometimes a metric is built up over the course of a pipeline rather than computed once, such as counting API calls inside a loop or the number of attempts on a task. Setting <code>increment = TRUE</code> adds <code>value</code> to the metric’s current value instead of overwriting it. If the metric hasn’t been set yet in the current run, the first call simply sets it. A negative <code>value</code> decrements.</p>
+<p>In this example, a pipeline pages through an API and retries a flaky request. Both the number of API calls and the number of attempts accumulate.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; ./pipelines/metric_increment.R</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&#39; @maestroFrequency 1 day</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>fetch_paginated <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  pages <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (page <span class="cf">in</span> pages) {</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    attempts <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">repeat</span> {</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>      attempts <span class="ot">&lt;-</span> attempts <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>      <span class="fu">update_metric</span>(<span class="st">&quot;attempts&quot;</span>, <span class="dv">1</span>, <span class="at">increment =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Pretends to call an API that sometimes fails</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>      ok <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">1</span>) <span class="sc">&gt;</span> <span class="fl">0.5</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (ok <span class="sc">||</span> attempts <span class="sc">&gt;=</span> <span class="dv">3</span>) <span class="cf">break</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">update_metric</span>(<span class="st">&quot;api_calls&quot;</span>, <span class="dv">1</span>, <span class="at">increment =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    results[[page]] <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">page =</span> page, <span class="at">value =</span> <span class="fu">rnorm</span>(<span class="dv">10</span>))</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, results)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Overwriting (default) is fine for a one-off value</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">update_metric</span>(<span class="st">&quot;rows_read&quot;</span>, <span class="fu">nrow</span>(df))</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>  df</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2718</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">build_schedule</span>(<span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>status <span class="ot">&lt;-</span> <span class="fu">run_schedule</span>(</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  schedule,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">orch_frequency =</span> <span class="st">&quot;1 day&quot;</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">quiet =</span> <span class="cn">TRUE</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="fu">get_metrics</span>(schedule)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 4
+  pipe_name       run_id metric    value
+  &lt;chr&gt;           &lt;chr&gt;  &lt;chr&gt;     &lt;dbl&gt;
+1 fetch_paginated SYyFTx attempts      4
+2 fetch_paginated SYyFTx api_calls     3
+3 fetch_paginated SYyFTx rows_read    30</code></pre>
+</div>
+</div>
+<p>Each metric has a single value per pipeline run: <code>api_calls</code> ends at 3 (one per page) while <code>attempts</code> is at least 3, depending on how many retries were needed.</p>
+
+
+
+
+
+</body></html>
